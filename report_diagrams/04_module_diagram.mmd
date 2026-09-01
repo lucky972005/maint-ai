@@ -1,0 +1,24 @@
+flowchart TB
+    subgraph Public
+        Landing["Landing Page"]
+        Login["Login and Signup"]
+    end
+    subgraph Technician
+        Scan["QR and AI Scanner"]
+        Repair["AR Repair Guide"]
+        Report["Fault Report"]
+        Inbox["Assigned Faults"]
+        Chat["FixBot Chat"]
+    end
+    subgraph Supervisor
+        Dashboard["Analytics Dashboard"]
+        Assign["Fault Assignment"]
+        Parts["Parts Inventory"]
+        History["Maintenance History"]
+    end
+    Login --> Scan
+    Scan --> Repair
+    Repair --> History
+    Report --> Assign
+    Assign --> Inbox
+    Dashboard --> Assign

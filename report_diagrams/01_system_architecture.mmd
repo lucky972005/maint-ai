@@ -1,0 +1,23 @@
+flowchart TB
+    subgraph Client["Browser PWA"]
+        UI["Next.js Pages and Components"]
+        SW["Service Worker"]
+        IDB["IndexedDB - Dexie.js"]
+    end
+    subgraph Server["Next.js 14 Server"]
+        API["API Routes /app/api/*"]
+        Auth["Middleware Auth Guard"]
+    end
+    subgraph Data["Backend Services"]
+        SB["Supabase Postgres Auth Storage"]
+        AI["AI Providers OpenAI Gemini Groq"]
+        Demo["Demo Data Fallback"]
+    end
+    UI --> API
+    UI --> IDB
+    SW --> UI
+    Auth --> UI
+    API --> SB
+    API --> AI
+    API -.-> Demo
+    IDB -->|"sync queue"| API

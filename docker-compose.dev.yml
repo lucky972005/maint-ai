@@ -1,0 +1,23 @@
+services:
+  maintai-dev:
+    image: node:20-alpine
+    container_name: maintai-dev
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+      - WATCHPACK_POLLING=true
+    env_file:
+      - path: .env.local
+        required: false
+      - path: .env
+        required: false
+    restart: unless-stopped

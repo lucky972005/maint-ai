@@ -1,0 +1,14 @@
+erDiagram
+    FACTORIES ||--o{ PROFILES : has
+    FACTORIES ||--o{ MACHINES : contains
+    MACHINES ||--o{ REPAIR_PROCEDURES : has
+    MACHINES ||--o{ MAINTENANCE_LOGS : logs
+    MACHINES ||--o{ FAULT_REPORTS : reports
+    PROFILES ||--o{ MAINTENANCE_LOGS : performs
+    PROFILES ||--o{ FAULT_REPORTS : reports
+    PROFILES ||--o{ FAULT_REPORTS : assigned
+    REPAIR_PROCEDURES ||--o{ MAINTENANCE_LOGS : used_in
+    MAINTENANCE_LOGS ||--o{ MAINTENANCE_EVIDENCE : has
+    MAINTENANCE_LOGS ||--o{ PARTS_USED : consumes
+    PARTS ||--o{ PARTS_USED : used
+    MACHINES ||--o{ PREVENTIVE_SCHEDULES : scheduled

@@ -1,0 +1,210 @@
+INTERNSHIP / UDP / TRAINING REPORT – REPORTING 3(Advanced Implementation, Testing & Validation Progress Report)
+1. Student Information
+Student Name
+RUTVA SANJAYKUMAR PRAJAPATI
+Enrollment Number
+23SE02CE068
+Program/Branch
+B.TECH COMPUTER ENGINEERING
+Semester
+7
+Contact Number
+9898068406
+Email ID
+23se02ce068@ppsu.ac.in
+2. Internship / UDP / Training Details
+Type
+UDP
+Company/Organization
+P.P.SAVANI UNIVERSITY
+Department/Domain
+SOE
+Mentor Name (Company)
+-
+Mentor Name (Institute)
+Dr. PRATIMA UPADHYAY
+Start Date
+08/06/2026
+End Date
+03/10/2026
+3. Work Progress Summary
+Project Title:
+________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+b) Brief Overview of Work Completed After Reporting 2
+Mention only the work completed after Reporting 2.
+Major tasks completed:
+Modules completed:
+New features implemented:
+Research / development work completed:
+Integration work completed:
+c) Overall Project Completion Status
+Component
+Status
+Completion (%)
+Requirement / Analysis
+Completed / In Progress
+Design
+Completed / In Progress
+Development
+Completed / In Progress
+Integration
+Completed / In Progress
+Testing
+Completed / In Progress
+Documentation
+Completed / In Progress
+Deployment
+Completed / In Progress / N.A.
+Overall Project Completion: ______ %
+4. Advanced Implementation
+Describe the major implementation work completed after Reporting 2.
+a) Module / Feature Implementation
+Module / Feature
+Work Completed
+Status
+Completed / In Progress
+Completed / In Progress
+Completed / In Progress
+b) Integration / Development Details
+Explain:
+Module integration
+API integration, if applicable
+Database integration
+Hardware integration, if applicable
+Software integration
+Major coding / development work
+c) Final / Updated Architecture
+Attach the updated system architecture, workflow, block diagram, UML diagram or process flow.
+Diagram:
+[Insert Updated Architecture / Workflow]
+Brief Explanation:________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________
+5.  Testing and Validation
+Describe the testing performed on the implemented work.
+Testing Performed
+Test No.
+Test / Function
+Expected Result
+Actual Result
+Status
+1
+Pass / Fail
+2
+Pass / Fail
+3
+Pass / Fail
+4
+Pass / Fail
+Testing Methods Used
+Functional Testing
+Unit Testing
+Integration Testing
+System Testing
+Performance Testing
+User Testing
+Experimental Validation
+Select only applicable methods.
+6. Results and Performance Analysis
+Present the results obtained from the work completed after Reporting 2.
+a) Final / Updated Results
+b) Performance Results
+Parameter / Metric
+Result Obtained
+Expected / Target
+Status
+1.
+2.
+c) Output / Result Screenshots
+Screenshot 1:[Insert Screenshot]
+Description:
+Screenshot 2:[Insert Screenshot]
+Description:
+Screenshot 3:[Insert Screenshot]
+Description:
+Students should include genuine screenshots/results from their actual work.
+7. Challenges, Solutions and Improvements
+Mention important problems encountered after Reporting 2.
+Challenge / Problem
+Solution Implemented
+Final Outcome
+1.
+2.
+Improvements Made After Reporting 2
+8. Current Project Status
+☐ Completed☐ Mostly Completed☐ Partially Completed☐ Work in Progress
+Completed Components
+Pending Components
+Work Planned Before Reporting 4
+9. Learning and Skills Acquired
+Technical Skills
+Tools / Technologies Learned
+Professional Skills
+Major Learning from Internship / UDP / Training
+9. References and Resources Used
+Minimum 5 genuine references(APA 7th Edition) are mandatory.
+Students must mention the resources actually used during the work.
+References may include:
+Research papers
+Books
+Official documentation
+Technical websites
+Standards
+APIs / libraries
+Software documentation
+References
+[1] Author Name, "Paper Title," Journal / Conference Name, Year.
+[2] Author Name, "Paper Title," Journal / Conference Name, Year.
+[3] Website / Organization Name, Page Title, URL, Access Date.
+[4] Author Name, Book Title, Publisher, Year.
+[5] Website / Documentation Name, Page Title, URL, Access Date.
+Reference Requirements
+Minimum 5 references
+References must be relevant to the project.
+Sources must actually be used by the student.
+References must be cited wherever required in the report.
+Fake or unrelated references are not acceptable.
+Official documentation and reliable academic sources are preferred.
+Evaluation (To be filled by Mentor (Institute))
+Criteria
+Excellent
+Good
+Average
+Poor
+Marks
+Work Completion & Implementation (25)
+≥90% meaningful work completed
+75–89%
+50–74%
+<50%
+/25
+Testing, Results & Validation (25)
+Strong testing with evidence and analysis
+Good testing
+Limited testing
+No meaningful validation
+/25
+Technical Understanding (20)
+Strong conceptual and technical understanding
+Good understanding
+Basic understanding
+Unable to explain work
+/20
+Documentation & Progress Presentation (20)
+Complete, clear and well documented
+Minor gaps
+Incomplete documentation
+Poor documentation
+/20
+References & Citations (10)
+Relevant, properly cited and formatted
+Minor issues
+Limited/relevant sources
+Missing/improper
+/10
+TOTAL
+/100
+Evaluation
+Student Signature
+Mentor (Company)Signature
+Mentor (Institute)Signature
+Mentor (Institute) Remarks
+________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________

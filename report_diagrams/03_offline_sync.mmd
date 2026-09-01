@@ -1,0 +1,12 @@
+flowchart TB
+    Online["Device Online"]
+    Offline["Device Offline"]
+    Cache["IndexedDB Cache machines procedures manuals"]
+    Queue["Sync Queue fault_report maintenance_log"]
+    API["REST API Routes"]
+    DB["Supabase Postgres"]
+    Online --> Cache
+    Offline --> Cache
+    Offline --> Queue
+    Online -->|processSyncQueue| Queue
+    Queue --> API --> DB

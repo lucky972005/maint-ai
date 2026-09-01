@@ -1,0 +1,184 @@
+INTERNSHIP / UDP / TRAINING REPORT – REPORTING 2(Project Design and Implementation Progress Report)
+1. Student Information
+Student Name
+Het Joshi
+Enrollment Number
+24SE09CE003
+Program/Branch
+Computer Engineering
+Semester
+7th
+Contact Number
+9409476665
+Email ID
+Hetjoshi535@gmail.com
+2. Internship / UDP / Training Details
+Type
+UDP (Undergraduate Design Project)
+Company/Organization
+PP Savani
+Department/Domain
+Full-Stack Web Development & Applied AI (Industrial IoT / Maintenance-Tech)
+Mentor Name (Company)
+PP savani University
+Mentor Name (Institute)
+Mr. Ayush Dodia
+Start Date
+17/06/2026
+End Date
+03/10/2026
+3. Work Progress Summary
+Project Title:  MaintAI — An AI-Powered Progressive Web Application for Industrial Maintenance Assistance.
+b) Brief Overview of Work Completed After Reporting 1
+When I wrapped up Reporting 1, MaintAI was still mostly wireframes and a rough sketch of what the database tables should look like. Since then it has turned into an application I can actually click through end to end, even if a few screens are still half-built. I spent the first couple of weeks of this phase just getting the Next.js 14 project set up properly with the App Router, TypeScript, and Tailwind, and wiring it to Supabase for the database and auth, before touching any of the AI-facing features — it felt safer to get the boring plumbing right first rather than bolt it on later.
+Authentication was the first real module I finished. I used Supabase Auth for login and signup rather than rolling my own, mainly because handling password resets and session tokens correctly is easy to get wrong, and Supabase already does it well. On top of that I added three roles — technician, supervisor, and admin — which control what a signed-in user actually sees. A technician lands on the scanner and dashboard; a supervisor also gets the analytics and inventory views; an admin can manage other users. Getting the role checks consistent across both the UI and the API routes took a bit of back-and-forth, since it's easy to hide a button in the interface and forget to guard the route behind it too.
+The dashboard came next, and it's deliberately simple right now — a status overview of machines (operational, under maintenance, faulty) with a few quick-action cards. It pulls straight from Supabase and doesn't do anything clever yet; the plan is to layer the analytics screen on top of the same data once that module is further along.
+QR scanning was one of the more fiddly pieces to get working reliably. I'm using the html5-qrcode library to read a machine's QR code through the device camera and resolve it to that machine's record in the database. It worked fine on my laptop almost immediately, but testing it on an actual phone browser surfaced a handful of camera-permission issues I hadn't hit before, which pushed me to add clearer handling around permission prompts and a fallback message when the camera can't be accessed.
+The feature I'm probably most pleased with so far is the AI-based machine identification screen. A technician can point their camera at a machine, take a photo, and the app sends it off to either OpenAI's GPT-4o or Google Gemini — whichever provider is configured — and gets back a ranked list of likely matches with confidence scores, which the technician can then confirm or correct. Alongside that, I built FixBot, a simple chat assistant for troubleshooting questions, using the same provider abstraction. Since not everyone testing the app has an API key set up, both features fall back to a canned, non-AI response when no key is configured, so the rest of the app still works for demo purposes without an active subscription.
+c) System Architecture / Workflow Diagram
+Use Case Diagram
+User Workflow Diagram
+d) Modules Completed / Features Implemented
+Module Name
+Description
+Current Status
+Authentication & Role Management
+Supabase Auth login/signup with technician / supervisor / admin roles.
+Completed
+Dashboard
+Machine status overview and quick actions.
+Completed
+QR Code Scanning
+Camera-based scanner resolving a machine's QR code to its record.
+Completed
+AI Machine Identification
+Photo-based machine recognition using OpenAI/Gemini.
+Completed
+FixBot Chat Assistant
+Basic AI chat for troubleshooting questions.
+Completed
+AR-Guided Repair Steps
+Step-by-step repair viewer with on-screen markers.
+In Progress
+Offline Support
+Local caching so the app works without a network connection.
+In Progress
+Analytics / Reports Screen
+Maintenance summary charts for supervisors.
+In Progress
+e) Tools and Technologies Used
+Programming Language: TypeScript, JavaScript (ES2022), SQL
+Framework: Next.js 14 (App Router), React 18, Tailwind CSS, Radix UI
+Database: PostgreSQL (via Supabase); IndexedDB (via Dexie.js) for offline cache
+Hardware/Software Tools: VS Code, Git, Chrome DevTools/Lighthouse, device camera & microphone
+Other Technologies: html5-qrcode, jsbarcode, react-pdf/pdfjs-dist, recharts, zod, date-fns, Supabase Auth/Storage, OpenAI GPT-4o, Google Gemini
+4. Implementation Description
+explain:
+Algorithm / Method Followed: For the AI-backed features, I send a structured prompt (plus the image, for machine identification) to whichever provider is configured — OpenAI's GPT-4o or Google Gemini — and parse the JSON that comes back into the shape the UI expects. If a request fails, or no API key is set at all, the app doesn't just error out; it falls back to a simpler, non-AI response so the rest of the demo still holds together.
+Coding / Development Details: The whole thing is built on Next.js 14 with the App Router and TypeScript throughout. I split the routes into a public section (landing, login, signup) and an authenticated section (dashboard, scan, identify, chat), and pulled anything reused across those — API clients, Supabase helpers, type definitions — into a shared lib/ folder so I wasn't copy-pasting the same fetch logic into every page.
+Database Design: The Postgres schema in Supabase covers factories, profiles, machines, repair procedures, maintenance logs, and parts, with foreign keys tying maintenance logs back to both a machine and a technician. I added Row Level Security policies early rather than as an afterthought, so a technician's queries are scoped to their own factory at the database level instead of relying on the frontend to filter correctly.
+API Integration: I built dedicated API routes for chat, machine identification, and CRUD operations on machines, parts, and procedures, rather than calling Supabase directly from client components everywhere. The OpenAI SDK handles GPT-4o calls, and Gemini is wired in as an alternate provider behind the same interface, so switching between them is a config change rather than a code change.
+Testing Performed: Testing so far has been manual rather than automated — going through each screen and API route myself, with the AI provider both configured and unconfigured, to make sure the fallback paths actually work and not just the happy path. I also ran ESLint regularly during development to catch obvious mistakes before they piled up.
+5.  Results / Output Screenshots
+Screenshot 1: Landing Page
+Description: Public landing page at '/'. Purpose: shows the app's first impression. Expected output: hero section with 'Try Demo' / 'Sign In' options.
+Screenshot 2: Dashboard
+Description: Authenticated dashboard at /dashboard. Purpose: shows machine status overview. Expected output: cards summarising machine counts by status.
+Screenshot 3 — QR Scanner
+Camera scanner at /scan. Purpose: demonstrates QR scanning. Expected output: live camera view with a QR bounding-box overlay.
+Screenshot 4 — AI Machine Identification
+Vision identification at /identify. Purpose: demonstrates the AI recognition feature. Expected output: ranked candidate cards with confidence percentages.
+Screenshot 5 — FixBot Chat
+Chat assistant at /chat. Purpose: demonstrates the AI troubleshooting assistant. Expected output: chat thread with a formatted answer.
+6. Challenges Faced and Solutions
+Challenge Faced
+Solution Applied
+Making the app usable without a paid AI key for testing/demo
+Added a fallback response for every AI-backed feature so the app still works without an API key.
+Understanding Supabase Auth and Row Level Security
+Followed official Supabase documentation and tested policies with multiple test accounts.
+Camera access issues while testing QR scanning on different devices
+Used the html5-qrcode library and tested permissions handling on both desktop and mobile browsers.
+Parsing AI responses that weren't always clean JSON
+Added a small helper function to extract JSON from the AI response text.
+Structuring the database schema before building the UI
+Planned the tables (machines, logs, parts, etc.) first and wrote a SQL migration script before starting the frontend.
+7. Tasks in Progress / Next Month Plan
+Remaining modules  — Complete the AR-guided repair steps screen, offline support, and the analytics/reports screen.
+Testing plan  — Test each screen manually across a few devices and browsers, and check the AI fallback behaviour once more features are added.
+Documentation work  — Update the setup guide (README) with any new steps needed to run the project.
+Deployment plan — Deploy a working build to Vercel for demo purposes once the remaining modules are complete.
+Project Timeline (Gantt Chart)
+Fig. 4 — Project timeline by week, showing completed, in-progress, and planned tasks relative to the Reporting 1 and Reporting 2 milestones.
+8. Learning / Skills Acquired
+Technical Skills Learned:
+Building a web app with Next.js 14, React and TypeScript.
+Setting up a database and authentication using Supabase.
+Integrating an external AI API (OpenAI/Gemini) into a web application.
+Professional Skills Learned:
+Problem solving — working through setup and integration issues independently.
+Documentation — writing a basic setup guide (README) for the project.
+Version control — using Git to track changes during development.
+9. References
+References / Resources Used
+Students must mention minimum 5 references.
+Format:
+Research Paper Reference:
+[1] Author Name, "Paper Title", Journal/Conference Name, Year.
+Website Reference:
+[2] Website Name, Page Title, URL, Access Date.
+Book Reference:
+[3] Author Name, Book Title, Publisher, Year.
+Example:
+[1] A. Kumar and R. Sharma, "Machine Learning Based Disease Detection System", IEEE Conference, 2024.
+[2] Python Documentation, https://docs.python.org, Accessed July 2026.
+[1] R. Palmarini, J. A. Erkoyuncu, R. Roy, and H. Torabmostaedi, "A systematic review of augmented reality applications in maintenance," Robotics and Computer-Integrated Manufacturing, vol. 49, pp. 215–228, Feb. 2018.
+[2] L. Ismail, A. Abdelmoti, A. Basu, A. D. E. Berini, and M. Naouss, "A systematic review of digital twin-driven predictive maintenance in industrial engineering: Taxonomy, architectural elements, and future research directions," arXiv:2509.24443, 2025.
+[3] Next.js Documentation, Vercel Inc., https://nextjs.org/docs, Accessed July 2026.
+[4] Supabase Documentation, Supabase Inc., https://supabase.com/docs, Accessed July 2026.
+[5] OpenAI Platform Documentation, OpenAI, https://platform.openai.com/docs, Accessed July 2026.
+Evaluation (To be filled by Mentor (Institute))
+Criteria
+Bloom’s Level
+Excellent (20)
+Good (15)
+Average (10)
+Poor (5)
+Marks Obtained (Out of 20)
+Work Completion
+L3–Apply
+≥50% work completed with proof
+30–50%
+<30%
+No progress
+Methodology Implementation
+L3–Apply / L4–Analyze
+Method clearly applied and justified
+Partial implementation
+Unclear
+None
+Tools & Technologies
+L3–Apply
+Tools used effectively with justification
+Tools used
+Limited use
+No tools
+Documentation
+L2–Understand / L3–Apply
+Proper logs, evidence
+Partial proof
+Minimal
+None
+Understanding of Work
+L2–Understand / L4–Analyze
+Strong conceptual clarity
+Moderate
+Basic
+No understanding
+Total Marks
+Evaluation
+Student Signature
+Mentor (Company)Signature
+Mentor (Institute)Signature
+Mentor (Institute) Remarks
+________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________

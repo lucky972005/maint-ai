@@ -1,0 +1,162 @@
+-- MaintAI Seed Data - Real Industrial Database
+-- Create demo users via Supabase Auth first, then link profiles
+
+INSERT INTO factories (id, name, location) VALUES
+  (gen_random_uuid(), 'Apex Manufacturing Plant', 'Pune, Maharashtra, India'),
+  (gen_random_uuid(), 'Precision Engineering Works', 'Chennai, Tamil Nadu, India'),
+  (gen_random_uuid(), 'Industrial Automation Hub', 'Bengaluru, Karnataka, India')
+ON CONFLICT (id) DO NOTHING;
+
+-- Demo users (create in Supabase Auth with emails below, password: demo123456)
+-- admin@demo.com, supervisor@demo.com, tech1@demo.com, tech2@demo.com, tech3@demo.com
+
+-- Insert profiles linking to auth users
+DO $$
+DECLARE
+  factory_id uuid;
+  admin_id uuid;
+  supervisor_id uuid;
+  tech1_id uuid;
+  tech2_id uuid;
+  tech3_id uuid;
+BEGIN
+  SELECT id INTO factory_id FROM factories LIMIT 1;
+  SELECT id INTO admin_id FROM auth.users WHERE email = 'admin@demo.com' LIMIT 1;
+  SELECT id INTO supervisor_id FROM auth.users WHERE email = 'supervisor@demo.com' LIMIT 1;
+  SELECT id INTO tech1_id FROM auth.users WHERE email = 'tech1@demo.com' LIMIT 1;
+  SELECT id INTO tech2_id FROM auth.users WHERE email = 'tech2@demo.com' LIMIT 1;
+  SELECT id INTO tech3_id FROM auth.users WHERE email = 'tech3@demo.com' LIMIT 1;
+
+  INSERT INTO profiles (id, full_name, email, role, factory_id) VALUES
+    (admin_id, 'Admin User', 'admin@demo.com', 'admin', factory_id),
+    (supervisor_id, 'Supervisor User', 'supervisor@demo.com', 'supervisor', factory_id),
+    (tech1_id, 'Tech User 1', 'tech1@demo.com', 'technician', factory_id),
+    (tech2_id, 'Tech User 2', 'tech2@demo.com', 'technician', factory_id),
+    (tech3_id, 'Tech User 3', 'tech3@demo.com', 'technician', factory_id)
+  ON CONFLICT (id) DO NOTHING;
+END $$;
+
+-- Get the first factory ID for use in machines
+DO $$
+DECLARE
+  factory_id uuid;
+BEGIN
+  SELECT id INTO factory_id FROM factories LIMIT 1;
+
+-- Real Industrial Machines with complete specifications and manuals
+INSERT INTO machines (id, qr_code, name, category, model, manufacturer, factory_id, location, status, serial_number, installed_date, specs, manual_url, image_url) VALUES
+  (gen_random_uuid(), 'MACHINE:haas-vf-2-001', 'CNC Vertical Machining Center', 'CNC', 'Haas VF-2SS', 'Haas Automation', factory_id, 'Bay A - Floor 1', 'operational', 'HAAS-VF2-2021-0847', '2021-03-15', '{"power": "22kW", "voltage": "480V", "spindle_speed": "12000 RPM", "travel_x": "762mm", "travel_y": "406mm", "travel_z": "508mm"}', 'https://www.haascnc.com/service/manuals.html', 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:grundfos-cr-15-001', 'Centrifugal Pump', 'Pump', 'Grundfos CR15-5', 'Grundfos', factory_id, 'Bay A - Floor 1', 'operational', 'CR15-5-2022-1234', '2022-01-20', '{"power": "5.5kW", "flow_rate": "15 m3/h", "head": "45m", "voltage": "380V"}', 'https://www.grundfos.com/service-support/operating-instructions', 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:atlas-ga-37-001', 'Rotary Screw Compressor', 'Compressor', 'Atlas Copco GA 37+', 'Atlas Copco', factory_id, 'Bay A - Floor 1', 'operational', 'AC-GA37-2020-0567', '2020-06-10', '{"power": "37kW", "pressure": "8 bar", "flow_rate": "5.8 m3/min", "voltage": "400V"}', 'https://www.atlascopco.com/us-en/products/compressors', 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:siemens-1le0102-001', 'Three-Phase Induction Motor', 'Motor', 'Siemens 1LE0102-1DA', 'Siemens', factory_id, 'Bay A - Floor 1', 'operational', 'SIEM-1LE-2021-0891', '2021-04-22', '{"power": "15kW", "voltage": "400V", "speed": "1450 RPM", "efficiency": "IE3"}', 'https://new.siemens.com/global/en/products/drives/motors/low-voltage-motors.html', 'https://images.unsplash.com/photo-1563770095-39d468f95a42?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:cummins-c110d5-001', 'Diesel Generator Set', 'Generator', 'Cummins C110D5', 'Cummins', factory_id, 'Bay A - Floor 1', 'operational', 'CUMM-C110-2019-0345', '2019-08-05', '{"power": "110kVA", "voltage": "415V", "fuel_capacity": "300L", "phase": "3-phase"}', 'https://www.cummins.com/generators', 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:flexco-1900-001', 'Heavy-Duty Conveyor Belt', 'Conveyor', 'Flexco 1900 Series', 'Flexco', factory_id, 'Bay B - Floor 1', 'operational', 'FLX-1900-2022-0789', '2022-02-14', '{"width": "1200mm", "length": "50m", "speed": "1.5 m/s", "capacity": "500 kg/m"}', 'https://www.flexco.com/products/belt-cleaners', 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:schuler-ph-400-001', 'Hydraulic Press', 'Press', 'Schuler PH-400', 'Schuler', factory_id, 'Bay B - Floor 1', 'maintenance', 'SCH-PH400-2020-0456', '2020-09-18', '{"force": "4000 kN", "stroke": "500mm", "table_size": "1500x1200mm", "power": "75kW"}', 'https://www.schulergroup.com/en/products', 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:hindustan-h-22-001', 'CNC Lathe Machine', 'CNC', 'Hindustan H-22', 'HMT Hindustan', factory_id, 'Bay C - Floor 2', 'operational', 'HMT-H22-2021-0678', '2021-11-30', '{"power": "18.5kW", "swing": "550mm", "length": "1000mm", "spindle_bore": "80mm"}', 'https://www.hmtindia.com/products', 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:lincoln-s350-001', 'MIG Welding Machine', 'Welder', 'Lincoln Power Wave S350', 'Lincoln Electric', factory_id, 'Bay C - Floor 2', 'operational', 'LIN-S350-2022-0234', '2022-05-08', '{"power": "350A", "voltage": "460V", "duty_cycle": "60%", "wire_feed": "25 m/min"}', 'https://www.lincolnelectric.com/en-us/support/manuals', 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:bridgeport-s1-001', 'Manual Milling Machine', 'CNC', 'Bridgeport Series 1', 'Bridgeport', factory_id, 'Warehouse Zone 3', 'operational', 'BRG-S1-2018-0123', '2018-03-25', '{"power": "2.2kW", "table_size": "1270x254mm", "spindle": "R8", "speed": "4000 RPM"}', 'https://www.hardinge.com/bridgeport', 'https://images.unsplash.com/photo-1563770095-39d468f95a42?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:cleaver-cb200-001', 'Industrial Boiler System', 'Boiler', 'Cleaver-Brooks CB-200', 'Cleaver-Brooks', factory_id, 'Utility Room', 'operational', 'CLV-CB200-2019-0567', '2019-07-12', '{"capacity": "200 HP", "pressure": "150 psi", "fuel": "Natural Gas", "efficiency": "84%"}', 'https://www.cleaverbrooks.com/support/manuals', 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:bac-vtl-001', 'Cooling Tower', 'Cooling', 'Baltimore Aircoil VTL', 'Baltimore Aircoil', factory_id, 'Utility Room', 'operational', 'BAC-VTL-2020-0890', '2020-10-20', '{"capacity": "500 tons", "flow_rate": "1500 GPM", "power": "15kW", "fan_type": "Axial"}', 'https://www.baltimoreaircoil.com/resources', 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:trane-rtac140-001', 'Air-Cooled Chiller', 'Chiller', 'Trane RTAC-140', 'Trane', factory_id, 'Utility Room', 'maintenance', 'TRN-RTAC-2021-0345', '2021-02-15', '{"capacity": "140 tons", "refrigerant": "R-134a", "power": "120kW", "cop": "3.2"}', 'https://www.trane.com/commercial/en/products-systems/equipment/chillers.html', 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:toyota-8fgcu25-001', 'Electric Forklift', 'Forklift', 'Toyota 8FGCU25', 'Toyota', factory_id, 'Warehouse Zone 3', 'operational', 'TOY-8FGCU-2022-0456', '2022-04-01', '{"capacity": "2500 kg", "lift_height": "4.5m", "power": "48V", "battery": "600Ah"}', 'https://www.toyota-forklift.com/support/manuals', 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:greenheck-cue220-001', 'Industrial Exhaust Fan', 'Fan', 'Greenheck CUE-220', 'Greenheck', factory_id, 'Production Line 4', 'operational', 'GRN-CUE-2021-0789', '2021-09-10', '{"flow_rate": "22000 CFM", "static_pressure": "2.5 inWG", "power": "7.5kW", "speed": "1750 RPM"}', 'https://www.greenheck.com/resources', 'https://images.unsplash.com/photo-1563770095-39d468f95a42?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:pump-motor-4500-001', 'Pump Motor Assembly', 'Motor', 'PM-4500 Custom', 'Apex OEM', factory_id, 'Maintenance Shop', 'broken', 'APEX-PM45-2020-0234', '2020-05-22', '{"power": "45kW", "voltage": "415V", "speed": "2950 RPM", "enclosure": "TEFC"}', 'https://www.apexoem.com/manuals', 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:festo-dsbc50-001', 'Pneumatic Cylinder', 'Pneumatic', 'Festo DSBC-50-500-PPV', 'Festo', factory_id, 'Production Line 4', 'operational', 'FES-DSBC-2022-0123', '2022-01-08', '{"bore": "50mm", "stroke": "500mm", "pressure": "10 bar", "mounting": "ISO 15552"}', 'https://www.festo.com/us/en/p/dsbc_50-500-ppv', 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:mitsubishi-mrj4-001', 'Servo Drive System', 'Drive', 'Mitsubishi MR-J4-500A', 'Mitsubishi Electric', factory_id, 'Bay C - Floor 2', 'operational', 'MITS-MRJ4-2021-0567', '2021-06-15', '{"power": "5kW", "voltage": "200-240V", "current": "25A", "feedback": "Absolute"}', 'https://www.mitsubishielectric.com/fa/en/products/servo', 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:siemens-s71500-001', 'PLC Control System', 'Control', 'Siemens S7-1500 CPU 1516-3', 'Siemens', factory_id, 'Maintenance Shop', 'operational', 'SIEM-S715-2020-0901', '2020-11-25', '{"work_memory": "1 MB", "digital_inputs": "32", "digital_outputs": "32", "analog_inputs": "8"}', 'https://support.industry.siemens.com/cs/document/109742826', 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=400&h=300&fit=crop'),
+  (gen_random_uuid(), 'MACHINE:abb-500kva-001', 'Power Transformer', 'Electrical', 'ABB 500kVA Dry-Type', 'ABB', factory_id, 'Utility Room', 'operational', 'ABB-500K-2019-0456', '2019-04-18', '{"power": "500 kVA", "primary_voltage": "11kV", "secondary_voltage": "415V", "frequency": "50Hz"}', 'https://new.abb.com/products/transformers', 'https://images.unsplash.com/photo-1563770095-39d468f95a42?w=400&h=300&fit=crop')
+ON CONFLICT (qr_code) DO NOTHING;
+END $$;
+
+-- Real Industrial Parts with specifications (no machine compatibility for now due to dynamic UUIDs)
+INSERT INTO parts (id, name, part_number, category, stock_quantity, min_stock_level, unit_price, compatible_machines) VALUES
+  (gen_random_uuid(), 'V-Belt A68', 'PN-01000', 'Mechanical', 25, 10, 45.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Oil Filter OF-200', 'PN-01001', 'Consumable', 40, 15, 28.50, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Ball Bearing 6205-2RS', 'PN-01002', 'Mechanical', 60, 20, 35.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Hydraulic Seal Kit HS-45', 'PN-01003', 'Hydraulic', 15, 8, 125.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Motor Coupling MC-12', 'PN-01004', 'Mechanical', 12, 5, 89.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Drive Belt DB-900', 'PN-01005', 'Mechanical', 30, 12, 52.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Air Filter AF-300', 'PN-01006', 'Consumable', 50, 20, 42.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Coolant Pump CP-55', 'PN-01007', 'Mechanical', 8, 5, 245.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Fuse 32A NH3', 'PN-01008', 'Electrical', 100, 30, 18.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Contactor LC1D25', 'PN-01009', 'Electrical', 25, 10, 65.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Relay 24V DC', 'PN-01010', 'Electrical', 45, 15, 22.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Pressure Switch PS-100', 'PN-01011', 'Electrical', 18, 8, 78.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Temperature Sensor TS-200', 'PN-01012', 'Electrical', 22, 10, 95.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Lubrication Grease LG-500', 'PN-01013', 'Consumable', 80, 25, 35.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Chain Link CL-38', 'PN-01014', 'Mechanical', 35, 12, 28.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Sprocket SP-24', 'PN-01015', 'Mechanical', 20, 8, 55.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Pulley PL-6', 'PN-01016', 'Mechanical', 15, 6, 42.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Shaft Seal SS-30', 'PN-01017', 'Mechanical', 40, 15, 38.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'O-Ring Kit OR-50', 'PN-01018', 'Consumable', 60, 20, 45.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Terminal Block TB-12', 'PN-01019', 'Electrical', 75, 25, 12.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Cable Gland CG-25', 'PN-01020', 'Electrical', 50, 18, 8.50, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Limit Switch LS-10', 'PN-01021', 'Electrical', 30, 10, 32.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Proximity Sensor PR-18', 'PN-01022', 'Electrical', 25, 10, 85.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Encoder EN-1024', 'PN-01023', 'Electrical', 12, 5, 185.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Servo Cable SC-5M', 'PN-01024', 'Electrical', 18, 8, 120.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'PLC Module IM-16', 'PN-01025', 'Electrical', 10, 4, 450.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Transformer Fuse TF-63', 'PN-01026', 'Electrical', 40, 15, 25.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Cooling Fan CF-120', 'PN-01027', 'Electrical', 22, 8, 68.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Heating Element HE-3kW', 'PN-01028', 'Electrical', 15, 6, 95.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Welding Wire 0.8mm', 'PN-01029', 'Consumable', 100, 40, 28.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Welding Gas Cylinder', 'PN-01030', 'Consumable', 8, 4, 180.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Cutting Tool Insert', 'PN-01031', 'Consumable', 200, 50, 15.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'End Mill 10mm', 'PN-01032', 'Consumable', 45, 20, 35.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Forklift Tire 23x9-10', 'PN-01033', 'Mechanical', 12, 6, 285.00, ARRAY[]::uuid[]),
+  (gen_random_uuid(), 'Hydraulic Fluid 20L', 'PN-01034', 'Consumable', 25, 10, 145.00, ARRAY[]::uuid[])
+ON CONFLICT (part_number) DO NOTHING;
+
+-- Real Repair Procedures with detailed steps (using first machine for all procedures)
+DO $$
+DECLARE
+  first_machine_id uuid;
+BEGIN
+  SELECT id INTO first_machine_id FROM machines LIMIT 1;
+
+INSERT INTO repair_procedures (id, machine_id, procedure_type, estimated_minutes, difficulty, steps, required_tools, safety_warnings) VALUES
+  (gen_random_uuid(), first_machine_id, 'Oil Change', 45, 'medium',
+   '[{"step":1,"instruction":"Power off the CNC machine and engage lockout/tagout procedures","tool_needed":"Multimeter","safety":"Ensure lockout/tagout is applied before proceeding. Wear appropriate PPE.","ar_marker":{"x":20,"y":25,"w":15,"h":10,"label":"Power Switch","color":"red"},"requires_tool_verification":false,"is_dangerous":true},{"step":2,"instruction":"Locate the oil drain plug on the spindle housing","tool_needed":"Allen Wrench Set","safety":"Keep hands clear of moving parts. Verify machine is de-energized.","ar_marker":{"x":35,"y":30,"w":12,"h":8,"label":"Drain Plug","color":"green"},"requires_tool_verification":true,"is_dangerous":false},{"step":3,"instruction":"Place drain pan beneath the drain plug","tool_needed":"None","safety":"Use proper lifting techniques for drain pan.","ar_marker":null,"requires_tool_verification":false,"is_dangerous":false},{"step":4,"instruction":"Remove drain plug using wrench and allow oil to fully drain","tool_needed":"Wrench Set","safety":"Hot oil may cause burns. Allow to cool before handling.","ar_marker":{"x":35,"y":30,"w":12,"h":8,"label":"Drain Plug","color":"blue"},"requires_tool_verification":true,"is_dangerous":false},{"step":5,"instruction":"Replace drain plug and torque to 25 Nm specification","tool_needed":"Torque Wrench","safety":"Ensure proper torque to prevent leaks.","ar_marker":null,"requires_tool_verification":true,"is_dangerous":false},{"step":6,"instruction":"Remove old oil filter and install new filter","tool_needed":"Oil Filter Wrench","safety":"Dispose of old filter according to environmental regulations.","ar_marker":{"x":45,"y":35,"w":10,"h":8,"label":"Oil Filter","color":"green"},"requires_tool_verification":true,"is_dangerous":false},{"step":7,"instruction":"Refill with ISO VG 68 hydraulic oil to specified level","tool_needed":"Oil Pump","safety":"Use correct oil grade to prevent equipment damage.","ar_marker":{"x":50,"y":40,"w":12,"h":8,"label":"Fill Port","color":"blue"},"requires_tool_verification":false,"is_dangerous":false},{"step":8,"instruction":"Run machine briefly and check for leaks","tool_needed":"Flashlight","safety":"Monitor for oil spray during operation.","ar_marker":null,"requires_tool_verification":false,"is_dangerous":true}]',
+   ARRAY['Multimeter', 'Allen Wrench Set', 'Wrench Set', 'Torque Wrench', 'Oil Filter Wrench', 'Oil Pump', 'Flashlight'],
+   ARRAY['Always follow lockout/tagout procedures', 'Wear safety glasses and gloves', 'Never bypass safety interlocks', 'Dispose of used oil properly']),
+  (gen_random_uuid(), first_machine_id, 'Belt Replacement', 60, 'hard',
+   '[{"step":1,"instruction":"De-energize the conveyor system and verify zero energy state","tool_needed":"Multimeter","safety":"Ensure lockout/tagout is applied before proceeding. Wear appropriate PPE.","ar_marker":{"x":15,"y":20,"w":15,"h":10,"label":"Main Disconnect","color":"red"},"requires_tool_verification":false,"is_dangerous":true},{"step":2,"instruction":"Remove belt guard panels using screwdriver","tool_needed":"Screwdriver Set","safety":"Watch for sharp edges on guard panels.","ar_marker":{"x":30,"y":25,"w":12,"h":8,"label":"Guard Panel","color":"green"},"requires_tool_verification":true,"is_dangerous":false},{"step":3,"instruction":"Release belt tension using adjustment bolt","tool_needed":"Adjustable Wrench","safety":"Belt may be under high tension. Release slowly.","ar_marker":{"x":40,"y":30,"w":10,"h":8,"label":"Tension Bolt","color":"blue"},"requires_tool_verification":true,"is_dangerous":false},{"step":4,"instruction":"Inspect pulleys for wear or damage","tool_needed":"Flashlight","safety":"Check for sharp edges on worn pulleys.","ar_marker":{"x":50,"y":35,"w":12,"h":8,"label":"Drive Pulley","color":"green"},"requires_tool_verification":false,"is_dangerous":false},{"step":5,"instruction":"Remove worn belt from pulley system","tool_needed":"None","safety":"Belt may be heavy. Use proper lifting technique.","ar_marker":null,"requires_tool_verification":false,"is_dangerous":false},{"step":6,"instruction":"Install new belt ensuring proper alignment","tool_needed":"Straightedge","safety":"Ensure belt is seated properly in pulley grooves.","ar_marker":{"x":45,"y":30,"w":15,"h":10,"label":"Belt Path","color":"blue"},"requires_tool_verification":false,"is_dangerous":false},{"step":7,"instruction":"Adjust tension to manufacturer specification (1% deflection)","tool_needed":"Tension Gauge","safety":"Over-tensioning can cause bearing failure.","ar_marker":{"x":40,"y":30,"w":10,"h":8,"label":"Tension Bolt","color":"red"},"requires_tool_verification":true,"is_dangerous":false},{"step":8,"instruction":"Reinstall belt guards securely","tool_needed":"Screwdriver Set","safety":"Ensure all fasteners are properly tightened.","ar_marker":{"x":30,"y":25,"w":12,"h":8,"label":"Guard Panel","color":"green"},"requires_tool_verification":true,"is_dangerous":false},{"step":9,"instruction":"Test run and verify belt tracking","tool_needed":"None","safety":"Stand clear of conveyor during startup.","ar_marker":null,"requires_tool_verification":false,"is_dangerous":true}]',
+   ARRAY['Multimeter', 'Screwdriver Set', 'Adjustable Wrench', 'Flashlight', 'Straightedge', 'Tension Gauge'],
+   ARRAY['Always follow lockout/tagout procedures', 'Wear safety glasses and gloves', 'Never bypass safety interlocks', 'Keep hands clear of moving parts']),
+  (gen_random_uuid(), first_machine_id, 'Bearing Replacement', 90, 'hard',
+   '[{"step":1,"instruction":"Lock out motor and confirm isolation","tool_needed":"Multimeter","safety":"Ensure lockout/tagout is applied before proceeding. Wear appropriate PPE.","ar_marker":{"x":20,"y":25,"w":15,"h":10,"label":"Disconnect","color":"red"},"requires_tool_verification":false,"is_dangerous":true},{"step":2,"instruction":"Remove access panels to expose bearing housing","tool_needed":"Screwdriver Set","safety":"Watch for sharp edges on panels.","ar_marker":{"x":35,"y":30,"w":12,"h":8,"label":"Access Panel","color":"green"},"requires_tool_verification":true,"is_dangerous":false},{"step":3,"instruction":"Mark shaft position before disassembly","tool_needed":"Marker","safety":"Ensure proper alignment marks are visible.","ar_marker":null,"requires_tool_verification":false,"is_dangerous":false},{"step":4,"instruction":"Remove retaining ring using snap ring pliers","tool_needed":"Snap Ring Pliers","safety":"Retaining ring can spring out. Wear eye protection.","ar_marker":{"x":45,"y":35,"w":10,"h":8,"label":"Retaining Ring","color":"blue"},"requires_tool_verification":true,"is_dangerous":false},{"step":5,"instruction":"Pull bearing with bearing puller","tool_needed":"Bearing Puller","safety":"Apply steady pressure. Do not hammer bearing.","ar_marker":{"x":50,"y":40,"w":12,"h":8,"label":"Bearing","color":"green"},"requires_tool_verification":true,"is_dangerous":false},{"step":6,"instruction":"Clean bearing seat and inspect for scoring","tool_needed":"Cleaning Solvent","safety":"Use ventilation when using cleaning solvents.","ar_marker":null,"requires_tool_verification":false,"is_dangerous":false},{"step":7,"instruction":"Apply appropriate grease to new bearing","tool_needed":"Grease Gun","safety":"Use correct grease type for application.","ar_marker":null,"requires_tool_verification":false,"is_dangerous":false},{"step":8,"instruction":"Press new bearing into housing using arbor press","tool_needed":"Arbor Press","safety":"Ensure bearing is aligned properly before pressing.","ar_marker":{"x":50,"y":40,"w":12,"h":8,"label":"Bearing Seat","color":"blue"},"requires_tool_verification":true,"is_dangerous":false},{"step":9,"instruction":"Reinstall retaining ring","tool_needed":"Snap Ring Pliers","safety":"Ensure ring is fully seated in groove.","ar_marker":{"x":45,"y":35,"w":10,"h":8,"label":"Retaining Ring","color":"green"},"requires_tool_verification":true,"is_dangerous":false},{"step":10,"instruction":"Reassemble components in reverse order","tool_needed":"Screwdriver Set","safety":"Ensure all fasteners are properly torqued.","ar_marker":null,"requires_tool_verification":false,"is_dangerous":false},{"step":11,"instruction":"Verify free rotation before energizing","tool_needed":"None","safety":"Rotate shaft by hand to check for binding.","ar_marker":null,"requires_tool_verification":false,"is_dangerous":false}]',
+   ARRAY['Multimeter', 'Screwdriver Set', 'Marker', 'Snap Ring Pliers', 'Bearing Puller', 'Cleaning Solvent', 'Grease Gun', 'Arbor Press'],
+   ARRAY['Always follow lockout/tagout procedures', 'Wear safety glasses and gloves', 'Never bypass safety interlocks', 'Use proper lifting techniques']),
+  (gen_random_uuid(), first_machine_id, 'Motor Inspection', 30, 'easy',
+   '[{"step":1,"instruction":"Verify lockout/tagout is in place","tool_needed":"Multimeter","safety":"Ensure lockout/tagout is applied before proceeding. Wear appropriate PPE.","ar_marker":{"x":20,"y":25,"w":15,"h":10,"label":"Disconnect","color":"red"},"requires_tool_verification":false,"is_dangerous":true},{"step":2,"instruction":"Visual inspect motor housing for cracks or burn marks","tool_needed":"Flashlight","safety":"Look for signs of overheating or damage.","ar_marker":{"x":35,"y":30,"w":15,"h":12,"label":"Motor Housing","color":"green"},"requires_tool_verification":false,"is_dangerous":false},{"step":3,"instruction":"Check motor mounting bolts for tightness","tool_needed":"Torque Wrench","safety":"Ensure bolts are properly torqued to specification.","ar_marker":{"x":45,"y":35,"w":10,"h":8,"label":"Mounting Bolt","color":"blue"},"requires_tool_verification":true,"is_dangerous":false},{"step":4,"instruction":"Measure insulation resistance with megohmmeter","tool_needed":"Megohmmeter","safety":"High voltage test. Keep clear of terminals.","ar_marker":{"x":50,"y":40,"w":12,"h":8,"label":"Terminal Box","color":"red"},"requires_tool_verification":true,"is_dangerous":true},{"step":5,"instruction":"Inspect cooling fan and ventilation ports","tool_needed":"Flashlight","safety":"Ensure fan is not damaged and ports are clear.","ar_marker":{"x":40,"y":45,"w":12,"h":8,"label":"Cooling Fan","color":"green"},"requires_tool_verification":false,"is_dangerous":false},{"step":6,"instruction":"Check shaft alignment with coupling","tool_needed":"Dial Indicator","safety":"Ensure coupling is properly aligned.","ar_marker":{"x":55,"y":50,"w":10,"h":8,"label":"Coupling","color":"blue"},"requires_tool_verification":true,"is_dangerous":false},{"step":7,"instruction":"Listen for abnormal noise during brief test run","tool_needed":"Stethoscope","safety":"Keep clear of rotating parts during test.","ar_marker":null,"requires_tool_verification":false,"is_dangerous":true},{"step":8,"instruction":"Record all measurements in inspection log","tool_needed":"None","safety":"Document all findings for future reference.","ar_marker":null,"requires_tool_verification":false,"is_dangerous":false}]',
+   ARRAY['Multimeter', 'Flashlight', 'Torque Wrench', 'Megohmmeter', 'Dial Indicator', 'Stethoscope'],
+   ARRAY['Always follow lockout/tagout procedures', 'Wear safety glasses and gloves', 'Never bypass safety interlocks', 'Use proper PPE for electrical work']),
+  (gen_random_uuid(), first_machine_id, 'Electrical Wiring Check', 45, 'medium',
+   '[{"step":1,"instruction":"De-energize all circuits and verify with multimeter","tool_needed":"Multimeter","safety":"Ensure lockout/tagout is applied before proceeding. Wear appropriate PPE.","ar_marker":{"x":20,"y":25,"w":15,"h":10,"label":"Main Power","color":"red"},"requires_tool_verification":false,"is_dangerous":true},{"step":2,"instruction":"Open electrical panel using appropriate PPE","tool_needed":"Screwdriver Set","safety":"Use insulated tools. Wear rubber gloves.","ar_marker":{"x":35,"y":30,"w":15,"h":12,"label":"Panel Door","color":"green"},"requires_tool_verification":true,"is_dangerous":false},{"step":3,"instruction":"Inspect wire terminations for looseness or corrosion","tool_needed":"Flashlight","safety":"Look for signs of overheating or damage.","ar_marker":{"x":45,"y":35,"w":12,"h":8,"label":"Terminal Block","color":"blue"},"requires_tool_verification":false,"is_dangerous":false},{"step":4,"instruction":"Check wire insulation for heat damage or fraying","tool_needed":"None","safety":"Replace any damaged wiring immediately.","ar_marker":null,"requires_tool_verification":false,"is_dangerous":false},{"step":5,"instruction":"Verify ground connections are secure","tool_needed":"Torque Wrench","safety":"Grounding is critical for safety.","ar_marker":{"x":50,"y":40,"w":10,"h":8,"label":"Ground Lug","color":"green"},"requires_tool_verification":true,"is_dangerous":false},{"step":6,"instruction":"Test circuit breakers and fuses for proper rating","tool_needed":"Multimeter","safety":"Use correct fuse ratings to prevent fire hazard.","ar_marker":{"x":40,"y":45,"w":12,"h":8,"label":"Circuit Breaker","color":"blue"},"requires_tool_verification":true,"is_dangerous":false},{"step":7,"instruction":"Tighten all terminal connections to spec","tool_needed":"Screwdriver Set","safety":"Do not over-tighten terminals.","ar_marker":{"x":45,"y":35,"w":12,"h":8,"label":"Terminal Block","color":"green"},"requires_tool_verification":true,"is_dangerous":false},{"step":8,"instruction":"Close panel and restore power gradually","tool_needed":"None","safety":"Stand clear of panel during energization.","ar_marker":{"x":35,"y":30,"w":15,"h":12,"label":"Panel Door","color":"red"},"requires_tool_verification":false,"is_dangerous":true},{"step":9,"instruction":"Monitor for abnormal readings post-restoration","tool_needed":"Multimeter","safety":"Check for proper voltage and current levels.","ar_marker":null,"requires_tool_verification":false,"is_dangerous":false}]',
+   ARRAY['Multimeter', 'Screwdriver Set', 'Flashlight', 'Torque Wrench'],
+   ARRAY['Always follow lockout/tagout procedures', 'Wear safety glasses and gloves', 'Never bypass safety interlocks', 'Use insulated tools for electrical work']),
+  (gen_random_uuid(), first_machine_id, 'Emergency Shutdown', 15, 'easy',
+   '[{"step":1,"instruction":"Identify the emergency stop button location","tool_needed":"None","safety":"Know all E-STOP locations before working.","ar_marker":{"x":25,"y":30,"w":12,"h":12,"label":"E-STOP","color":"red"},"requires_tool_verification":false,"is_dangerous":false},{"step":2,"instruction":"Press E-STOP button firmly until latched","tool_needed":"None","safety":"Press firmly and hold until latched.","ar_marker":{"x":25,"y":30,"w":12,"h":12,"label":"E-STOP","color":"red"},"requires_tool_verification":false,"is_dangerous":false},{"step":3,"instruction":"Verify all motion has ceased on the CNC machine","tool_needed":"None","safety":"Ensure all moving parts have stopped.","ar_marker":null,"requires_tool_verification":false,"is_dangerous":false},{"step":4,"instruction":"Turn main disconnect switch to OFF position","tool_needed":"None","safety":"Verify power is completely disconnected.","ar_marker":{"x":40,"y":35,"w":15,"h":10,"label":"Main Disconnect","color":"red"},"requires_tool_verification":false,"is_dangerous":true},{"step":5,"instruction":"Apply lockout/tagout devices to all energy sources","tool_needed":"Lockout Kit","safety":"Use personal locks for each technician.","ar_marker":{"x":50,"y":40,"w":12,"h":8,"label":"Lockout Point","color":"green"},"requires_tool_verification":true,"is_dangerous":false},{"step":6,"instruction":"Verify zero energy state with testing equipment","tool_needed":"Multimeter","safety":"Test all energy sources before proceeding.","ar_marker":null,"requires_tool_verification":true,"is_dangerous":true},{"step":7,"instruction":"Post warning signs at control stations","tool_needed":"None","safety":"Ensure signs are visible to all personnel.","ar_marker":null,"requires_tool_verification":false,"is_dangerous":false},{"step":8,"instruction":"Notify supervisor of emergency shutdown reason","tool_needed":"None","safety":"Document the reason for emergency shutdown.","ar_marker":null,"requires_tool_verification":false,"is_dangerous":false}]',
+   ARRAY['Lockout Kit', 'Multimeter'],
+   ARRAY['Always follow lockout/tagout procedures', 'Wear safety glasses and gloves', 'Never bypass safety interlocks', 'Know all emergency stop locations'])
+ON CONFLICT (id) DO NOTHING;
+END $$;
+
+-- Preventive Maintenance Schedules
+DO $$
+DECLARE
+  first_machine_id uuid;
+  first_procedure_id uuid;
+BEGIN
+  SELECT id INTO first_machine_id FROM machines LIMIT 1;
+  SELECT id INTO first_procedure_id FROM repair_procedures LIMIT 1;
+
+INSERT INTO preventive_schedules (id, machine_id, procedure_id, next_due_date, frequency_days, notified) VALUES
+  (gen_random_uuid(), first_machine_id, first_procedure_id, '2024-07-15', 30, false),
+  (gen_random_uuid(), first_machine_id, first_procedure_id, '2024-07-20', 45, false),
+  (gen_random_uuid(), first_machine_id, first_procedure_id, '2024-07-25', 60, false),
+  (gen_random_uuid(), first_machine_id, first_procedure_id, '2024-08-01', 90, false),
+  (gen_random_uuid(), first_machine_id, first_procedure_id, '2024-07-10', 30, false),
+  (gen_random_uuid(), first_machine_id, first_procedure_id, '2024-07-12', 60, false)
+ON CONFLICT (id) DO NOTHING;
+END $$;

@@ -1,0 +1,60 @@
+name: Continuous Deployment
+
+on:
+  workflow_run:
+    workflows: ["Build and Push Docker Image"]
+    types: [completed]
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      target_env:
+        description: "Deployment target environment"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - production
+          - staging
+
+jobs:
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH (Docker Compose)
+        uses: appleboy/ssh-action@v1.0.3
+        if: ${{ env.SSH_HOST != '' }}
+        env:
+          SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            cd /opt/maintai || exit 1
+            echo "Pulling latest Docker image..."
+            docker compose pull maintai-app
+            echo "Restarting service..."
+            docker compose up -d --remove-orphans maintai-app
+            echo "Verifying health check..."
+            sleep 10
+            docker compose exec maintai-app wget --spider -q http://127.0.0.1:3000/api/health || {
+              echo "Health check failed!"
+              docker compose logs --tail=50 maintai-app
+              exit 1
+            }
+            echo "Deployment successfully verified!"
+
+      - name: Informative fallback if secrets not configured yet
+        if: ${{ env.SSH_HOST == '' }}
+        env:
+          SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          echo "No DEPLOY_HOST secret detected in repository secrets."
+          echo "Configure DEPLOY_HOST, DEPLOY_USER, and DEPLOY_SSH_KEY in repository Settings -> Secrets to enable automated remote deployments."
+          echo "Alternatively, connect your repository to Vercel, Coolify, or Kubernetes GitOps (e.g. ArgoCD/Flux)."

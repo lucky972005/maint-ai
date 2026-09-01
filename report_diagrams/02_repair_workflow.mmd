@@ -1,0 +1,12 @@
+flowchart LR
+    A["Scan QR or AI Identify"] --> B["Select Machine"]
+    B --> C["Choose Procedure"]
+    C --> D["Step Guide with AR Overlay"]
+    D --> E{"Tool Required?"}
+    E -->|Yes| F["AI Tool Verification"]
+    E -->|No| G["Voice or Manual Next"]
+    F --> G
+    G --> H{"More Steps?"}
+    H -->|Yes| D
+    H -->|No| I["Save Maintenance Log"]
+    I --> J["History and Dashboard"]
