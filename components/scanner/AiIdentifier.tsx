@@ -13,7 +13,6 @@ import {
   Sparkles,
   MapPin,
   RotateCcw,
-  FileText,
   AlertTriangle,
   Building,
   Gauge,
@@ -21,7 +20,7 @@ import {
 } from "lucide-react";
 import { CameraView } from "./CameraView";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 interface ProcedureItem {
@@ -253,6 +252,11 @@ export function AiIdentifier() {
                     {activeMatch.category && (
                       <Badge variant="outline" className="text-xs">
                         {activeMatch.category}
+                      </Badge>
+                    )}
+                    {identifiedType && identifiedType !== activeMatch.name && (
+                      <Badge variant="secondary" className="text-xs text-muted-foreground">
+                        {identifiedType}
                       </Badge>
                     )}
                   </div>
