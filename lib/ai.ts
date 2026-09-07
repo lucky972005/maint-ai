@@ -7,8 +7,16 @@ type TextMessage = {
   content: string;
 };
 
+function getGeminiModel(): string {
+  const envModel = process.env.GEMINI_MODEL;
+  if (!envModel || envModel.includes("gemini-1.5") || envModel === "gemini-2.5-flash" || envModel === "gemini-2.5-flash-lite") {
+    return "gemini-3.7-flash";
+  }
+  return envModel;
+}
+
 const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4o";
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+const GEMINI_MODEL = getGeminiModel();
 const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 
 function getRequestedProvider(): AIProvider | "auto" {
@@ -173,7 +181,12 @@ export async function generateJsonResponse(messages: TextMessage[], maxTokens = 
   return extractJson(text) as Record<string, unknown>;
 }
 
-export async function generateVisionJsonResponse(prompt: string, imageBase64?: string, mimeType = "image/jpeg"): Promise<Record<string, unknown>> {
+export async function generateVisionJsonResponse(
+  prompt: string,
+  imageBase64?: string,
+  mimeType = "image/jpeg",
+  maxOutputTokens = 1500
+): Promise<Record<string, unknown>> {
   const provider = getVisionProvider();
   if (!provider) {
     throw new Error("Vision requires OpenAI or Gemini API key (Groq doesn't support image analysis)");
@@ -193,6 +206,7 @@ export async function generateVisionJsonResponse(prompt: string, imageBase64?: s
         },
       ],
       response_format: { type: "json_object" },
+      max_tokens: maxOutputTokens,
     });
 
     return extractJson(response.choices[0].message.content ?? "") as Record<string, unknown>;
@@ -208,19 +222,39 @@ export async function generateVisionJsonResponse(prompt: string, imageBase64?: s
     parts.push({ inlineData: { mimeType, data: imageBase64 } });
   }
 
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ role: "user", parts }],
-      generationConfig: { responseMimeType: "application/json", temperature: 0.2, maxOutputTokens: 800 },
-    }),
-  });
+  const candidateModels = Array.from(new Set([GEMINI_MODEL, "gemini-3.6-flash", "gemini-3.5-flash"]));
+  let lastError: Error | null = null;
 
-  if (!response.ok) {
-    throw new Error(`Gemini vision request failed with status ${response.status}`);
+  for (const model of candidateModels) {
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts }],
+          generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens },
+        }),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text().catch(() => "");
+        console.warn(`Gemini vision request with ${model} failed (${response.status}): ${errText}`);
+        if (response.status === 503 || response.status === 429) {
+          lastError = new Error(`Model ${model} status ${response.status}: ${errText}`);
+          continue; // Try next fallback model
+        }
+        throw new Error(`Gemini vision request failed with status ${response.status}: ${errText}`);
+      }
+
+      const data = await response.json();
+      return extractJson(extractTextFromGeminiResponse(data)) as Record<string, unknown>;
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      console.warn(`Gemini vision error with model ${model}:`, lastError.message);
+    }
   }
 
-  const data = await response.json();
-  return extractJson(extractTextFromGeminiResponse(data)) as Record<string, unknown>;
+  throw lastError || new Error("All Gemini vision models failed");
 }
+
+
