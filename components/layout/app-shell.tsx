@@ -332,13 +332,14 @@ function BottomNav() {
 }
 
 function AppHeader({ title, showStatus = true }: { title?: string; showStatus?: boolean }) {
-  const { online, profile, demoMode } = useApp();
+  const { online, profile, demoMode, switchDemoRole, exitDemoMode } = useApp();
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const router = useRouter();
   const roleLabel = profile?.role ? profile.role[0].toUpperCase() + profile.role.slice(1) : "Guest";
 
   const handleLogout = async () => {
     try {
+      exitDemoMode();
       const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
       await supabase.auth.signOut();
@@ -346,6 +347,7 @@ function AppHeader({ title, showStatus = true }: { title?: string; showStatus?: 
       router.push("/login");
     } catch (error) {
       console.error("Logout error:", error);
+      exitDemoMode();
       router.push("/login");
     }
   };
@@ -367,7 +369,23 @@ function AppHeader({ title, showStatus = true }: { title?: string; showStatus?: 
             <p className="truncate text-xs text-muted-foreground">Apex Manufacturing Plant</p>
           </div>
           <div className="flex items-center gap-2">
-            {demoMode && <Badge variant="warning">Demo</Badge>}
+            {demoMode && (
+              <div className="flex items-center rounded-lg border border-amber-500/30 bg-amber-500/10 p-0.5 text-[11px]">
+                {(["technician", "admin", "supervisor"] as const).map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => switchDemoRole(r)}
+                    className={cn(
+                      "rounded px-1.5 py-0.5 capitalize transition",
+                      profile?.role === r ? "bg-amber-500 font-semibold text-black" : "text-amber-400/80 hover:text-amber-300"
+                    )}
+                  >
+                    {r === "technician" ? "Tech" : r === "supervisor" ? "Super" : "Admin"}
+                  </button>
+                ))}
+              </div>
+            )}
             {showStatus && (
               <Badge variant={online ? "success" : "destructive"} className="gap-1">
                 {online ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
@@ -400,7 +418,26 @@ function AppHeader({ title, showStatus = true }: { title?: string; showStatus?: 
           </div>
           <div className="flex flex-1 items-center justify-end gap-3">
             <SearchPalette />
-            {demoMode && <Badge variant="warning">Demo mode</Badge>}
+            {demoMode && (
+              <div className="flex items-center gap-1 rounded-xl border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-xs text-amber-500">
+                <span className="font-medium text-amber-400">Demo Role:</span>
+                {(["technician", "admin", "supervisor"] as const).map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => switchDemoRole(r)}
+                    className={cn(
+                      "rounded-lg px-2 py-0.5 capitalize font-medium transition",
+                      profile?.role === r
+                        ? "bg-amber-500 font-semibold text-black shadow-sm"
+                        : "text-amber-300/80 hover:bg-amber-500/20 hover:text-amber-200"
+                    )}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            )}
             {showStatus && (
               <Badge variant={online ? "success" : "destructive"} className="gap-1 px-3 py-1.5">
                 {online ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}

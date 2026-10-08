@@ -4,7 +4,15 @@ import { DEMO_USERS } from "./demo-data";
 export const DEMO_COOKIE = "maintai_demo";
 
 export function getDemoUserByEmail(email: string): Profile | undefined {
-  const user = DEMO_USERS.find((u) => u.email === email);
+  const user = DEMO_USERS.find((u) => u.email.toLowerCase() === email.trim().toLowerCase());
+  if (!user) return undefined;
+  const { password: _password, ...profile } = user;
+  void _password;
+  return profile;
+}
+
+export function getDemoUserByRole(role: "admin" | "technician" | "supervisor"): Profile | undefined {
+  const user = DEMO_USERS.find((u) => u.role === role);
   if (!user) return undefined;
   const { password: _password, ...profile } = user;
   void _password;

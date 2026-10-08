@@ -84,9 +84,13 @@ export default function SignupPage() {
           {!isSupabaseConfigured() && (
             <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
               <p className="text-sm text-yellow-500">
-                ⚠️ Supabase is not configured. Please set up Supabase in your .env.local file or use 
-                <Link href="/" className="underline ml-1">Demo mode</Link>.
+                ⚠️ Supabase is not configured in Vercel environment variables. Account creation requires a connected Supabase database.
               </p>
+              <div className="mt-2 flex gap-2">
+                <Link href="/login" className="text-xs font-semibold text-yellow-400 underline hover:text-yellow-300">
+                  Use 1-Click Demo Logins (Admin / Technician) →
+                </Link>
+              </div>
             </div>
           )}
           <form onSubmit={handleSignup} className="space-y-4">

@@ -2,8 +2,8 @@
 
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { Profile } from "@/lib/types";
-import { DEMO_DATA, isSupabaseConfigured } from "@/lib/demo-data";
-import { startDemoSession } from "@/lib/demo-session";
+import { DEMO_DATA, DEMO_USERS, isSupabaseConfigured } from "@/lib/demo-data";
+import { startDemoSession, clearDemoSession } from "@/lib/demo-session";
 import { hydrateOfflineCache, isOnline, processSyncQueue, type SyncQueueItem } from "@/lib/offline";
 import { toast } from "@/hooks/use-toast";
 import { createClient } from "@/lib/supabase/client";
@@ -13,7 +13,9 @@ interface AppContextValue {
   setProfile: (p: Profile | null) => void;
   online: boolean;
   demoMode: boolean;
-  enterDemoMode: () => void;
+  enterDemoMode: (targetProfile?: Profile) => void;
+  exitDemoMode: () => void;
+  switchDemoRole: (role: "admin" | "technician" | "supervisor") => void;
 }
 
 const AppContext = createContext<AppContextValue>({
@@ -22,6 +24,8 @@ const AppContext = createContext<AppContextValue>({
   online: true,
   demoMode: true,
   enterDemoMode: () => {},
+  exitDemoMode: () => {},
+  switchDemoRole: () => {},
 });
 
 export function useApp() {
@@ -41,11 +45,32 @@ export function Providers({ children }: { children: ReactNode }) {
   const syncRunning = useRef(false);
   const supabase = createClient();
 
-  const enterDemoMode = () => {
-    const demoProfile = startDemoSession();
+  const enterDemoMode = (targetProfile?: Profile) => {
+    const demoProfile = startDemoSession(targetProfile);
     setDemoMode(true);
     setProfile(demoProfile);
     hydrateOfflineCache(DEMO_DATA.machines, DEMO_DATA.procedures).catch(console.error);
+  };
+
+  const exitDemoMode = () => {
+    clearDemoSession();
+    setDemoMode(false);
+    setProfile(null);
+  };
+
+  const switchDemoRole = (role: "admin" | "technician" | "supervisor") => {
+    const user = DEMO_USERS.find((u) => u.role === role);
+    if (user) {
+      const { password: _password, ...p } = user;
+      void _password;
+      startDemoSession(p);
+      setDemoMode(true);
+      setProfile(p);
+      toast({
+        title: `Switched to ${p.full_name}`,
+        description: `Role active: ${p.role.toUpperCase()}`,
+      });
+    }
   };
 
   useEffect(() => {
@@ -185,7 +210,7 @@ export function Providers({ children }: { children: ReactNode }) {
   }, [online]);
 
   return (
-    <AppContext.Provider value={{ profile, setProfile, online, demoMode, enterDemoMode }}>
+    <AppContext.Provider value={{ profile, setProfile, online, demoMode, enterDemoMode, exitDemoMode, switchDemoRole }}>
       {children}
     </AppContext.Provider>
   );
