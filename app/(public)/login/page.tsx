@@ -81,7 +81,17 @@ function LoginForm() {
 
     try {
       const trimmedEmail = email.trim().toLowerCase();
-      const matchedDemoUser = DEMO_USERS.find((u) => {
+      let customUsers: any[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          customUsers = JSON.parse(localStorage.getItem("custom_registered_users") || "[]");
+        } catch {
+          customUsers = [];
+        }
+      }
+      const allUsers = [...DEMO_USERS, ...customUsers];
+
+      const matchedDemoUser = allUsers.find((u) => {
         if (u.email.toLowerCase() !== trimmedEmail) return false;
         if (typeof window !== "undefined") {
           const customPasswords = JSON.parse(localStorage.getItem("custom_user_passwords") || "{}");
@@ -92,7 +102,7 @@ function LoginForm() {
         return u.password === password;
       });
 
-      // If Supabase is not configured, authenticate against demo accounts
+      // If Supabase is not configured, authenticate against demo or custom accounts
       if (!supabaseConfigured) {
         if (matchedDemoUser) {
           const { password: _password, ...demoProfile } = matchedDemoUser;
@@ -100,7 +110,7 @@ function LoginForm() {
           enterDemoMode(demoProfile);
           toast({
             title: `Welcome, ${demoProfile.full_name}`,
-            description: `Signed in as ${demoProfile.role.toUpperCase()} (Demo Mode)`,
+            description: `Signed in as ${demoProfile.role.toUpperCase()}`,
           });
           const targetRoute =
             demoProfile.role === "admin"
@@ -137,16 +147,22 @@ function LoginForm() {
       ]);
 
       if (error) {
-        // Fallback for demo users even if Supabase auth fails
+        // Fallback for demo users & locally registered users even if Supabase auth fails (e.g. rate limit, unconfirmed email)
         if (matchedDemoUser) {
           const { password: _password, ...demoProfile } = matchedDemoUser;
           void _password;
           enterDemoMode(demoProfile);
           toast({
             title: `Welcome, ${demoProfile.full_name}`,
-            description: `Logged in using Demo credentials`,
+            description: `Signed in as ${demoProfile.role.toUpperCase()}`,
           });
-          router.push(demoProfile.role === "admin" ? "/dashboard" : "/scan");
+          const targetRoute =
+            demoProfile.role === "admin"
+              ? "/dashboard"
+              : demoProfile.role === "supervisor"
+              ? "/assignments"
+              : "/scan";
+          router.push(targetRoute);
           return;
         }
         throw error;
