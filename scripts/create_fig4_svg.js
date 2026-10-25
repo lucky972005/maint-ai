@@ -1,0 +1,176 @@
+const fs = require('fs');
+const path = require('path');
+
+function createFigure4Svg() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1050 360" width="1050" height="360" style="background:#ffffff; font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <defs>
+    <!-- Linear Gradients -->
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a8a"/>
+      <stop offset="100%" stop-color="#0e2a47"/>
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#3730a3"/>
+    </linearGradient>
+    <linearGradient id="amberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#f1f5f9"/>
+    </linearGradient>
+
+    <!-- Drop Shadows -->
+    <filter id="cardShadow" x="-10%" y="-10%" width="125%" height="125%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.1"/>
+    </filter>
+    <filter id="pillShadow" x="-10%" y="-10%" width="125%" height="125%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#000000" flood-opacity="0.15"/>
+    </filter>
+
+    <!-- Marker Arrowheads -->
+    <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 0 1 L 7 4 L 0 7 z" fill="#0e2a47" />
+    </marker>
+    <marker id="arrowheadGreen" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 0 1 L 7 4 L 0 7 z" fill="#059669" />
+    </marker>
+  </defs>
+
+  <!-- Container Box -->
+  <rect x="10" y="10" width="1030" height="340" rx="12" fill="url(#bgGrad)" stroke="#cbd5e1" stroke-width="2"/>
+
+  <!-- Top Title Banner -->
+  <rect x="25" y="22" width="1000" height="36" rx="6" fill="#0e2a47"/>
+  <text x="40" y="46" font-size="16" font-weight="800" fill="#ffffff" letter-spacing="0.5">
+    OFFLINE-FIRST TRANSACTIONAL SYNCHRONIZATION ENGINE &amp; WRITE-AHEAD LOGGING (WAL)
+  </text>
+  <rect x="880" y="28" width="130" height="24" rx="12" fill="#10b981"/>
+  <text x="945" y="44" font-size="11" font-weight="800" fill="#ffffff" text-anchor="middle">
+    ZERO DATA LOSS
+  </text>
+
+  <!-- ================= STAGE 1: SHOP FLOOR MUTATION ================= -->
+  <g transform="translate(30, 80)">
+    <rect x="0" y="0" width="210" height="225" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" filter="url(#cardShadow)"/>
+    <rect x="0" y="0" width="210" height="42" rx="10" fill="url(#blueGrad)"/>
+    <rect x="0" y="30" width="210" height="12" fill="url(#blueGrad)"/>
+    <circle cx="22" cy="21" r="13" fill="#3b82f6"/>
+    <text x="22" y="26" font-size="13" font-weight="900" fill="#ffffff" text-anchor="middle">1</text>
+    <text x="44" y="26" font-size="13.5" font-weight="800" fill="#ffffff">Field Technician</text>
+    
+    <!-- Content inside Card 1 -->
+    <rect x="12" y="52" width="186" height="42" rx="6" fill="#f1f5f9" stroke="#e2e8f0"/>
+    <text x="20" y="68" font-size="11" font-weight="700" fill="#0f172a">Action Triggered:</text>
+    <text x="20" y="84" font-size="10.5" fill="#475569">Step Complete / Part Used</text>
+
+    <rect x="12" y="102" width="186" height="60" rx="6" fill="#fef2f2" stroke="#fecaca"/>
+    <text x="20" y="118" font-size="11" font-weight="700" fill="#991b1b">Shop-Floor Reality:</text>
+    <text x="20" y="134" font-size="10" fill="#7f1d1d">✕ No Wi-Fi / Cellular Signal</text>
+    <text x="20" y="148" font-size="10" fill="#7f1d1d">✕ Cloud Endpoint Unreachable</text>
+
+    <rect x="12" y="172" width="186" height="42" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="20" y="188" font-size="10.5" font-weight="700" fill="#1d4ed8">⚡ PWA Edge Interceptor</text>
+    <text x="20" y="202" font-size="9.5" fill="#1e40af">Routes write to Dexie.js</text>
+  </g>
+
+  <!-- Arrow 1 -> 2 -->
+  <path d="M 245 190 L 285 190" fill="none" stroke="#0e2a47" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <rect x="245" y="160" width="40" height="20" rx="4" fill="#0e2a47"/>
+  <text x="265" y="174" font-size="9" font-weight="800" fill="#ffffff" text-anchor="middle">&lt;5ms</text>
+
+  <!-- ================= STAGE 2: DEXIE WAL & INDEXEDDB ================= -->
+  <g transform="translate(290, 80)">
+    <rect x="0" y="0" width="220" height="225" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" filter="url(#cardShadow)"/>
+    <rect x="0" y="0" width="220" height="42" rx="10" fill="url(#purpleGrad)"/>
+    <rect x="0" y="30" width="220" height="12" fill="url(#purpleGrad)"/>
+    <circle cx="22" cy="21" r="13" fill="#6366f1"/>
+    <text x="22" y="26" font-size="13" font-weight="900" fill="#ffffff" text-anchor="middle">2</text>
+    <text x="44" y="26" font-size="13.5" font-weight="800" fill="#ffffff">Dexie.js (IndexedDB)</text>
+    
+    <!-- Content inside Card 2 -->
+    <rect x="12" y="52" width="196" height="48" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="20" y="68" font-size="11" font-weight="700" fill="#312e81">Write-Ahead Log (WAL):</text>
+    <text x="20" y="84" font-size="10" font-family="monospace" fill="#4338ca">UUID: 8f4b-21a4-9e01</text>
+    <text x="20" y="94" font-size="9" font-family="monospace" fill="#6b7280">timestamp: 1728551400</text>
+
+    <rect x="12" y="108" width="196" height="50" rx="6" fill="#f5f3ff" stroke="#ddd6fe"/>
+    <text x="20" y="124" font-size="10.5" font-weight="700" fill="#4338ca">Durable Mutation Queue:</text>
+    <text x="20" y="139" font-size="9.5" fill="#4c1d95">• State: [PENDING_SYNC]</text>
+    <text x="20" y="151" font-size="9.5" fill="#4c1d95">• Idempotent atomic lock</text>
+
+    <rect x="12" y="168" width="196" height="45" rx="6" fill="#fdf4ff" stroke="#f0abfc"/>
+    <text x="20" y="184" font-size="10" font-weight="700" fill="#86198f">Persistence Guarantee:</text>
+    <text x="20" y="198" font-size="9" fill="#701a75">Survives tab close &amp; reboot</text>
+  </g>
+
+  <!-- Arrow 2 -> 3 -->
+  <path d="M 515 190 L 555 190" fill="none" stroke="#0e2a47" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <rect x="515" y="160" width="40" height="20" rx="4" fill="#4f46e5"/>
+  <text x="535" y="174" font-size="8.5" font-weight="800" fill="#ffffff" text-anchor="middle">RETRY</text>
+
+  <!-- ================= STAGE 3: SYNC ORCHESTRATOR ================= -->
+  <g transform="translate(560, 80)">
+    <rect x="0" y="0" width="215" height="225" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" filter="url(#cardShadow)"/>
+    <rect x="0" y="0" width="215" height="42" rx="10" fill="url(#amberGrad)"/>
+    <rect x="0" y="30" width="215" height="12" fill="url(#amberGrad)"/>
+    <circle cx="22" cy="21" r="13" fill="#f59e0b"/>
+    <text x="22" y="26" font-size="13" font-weight="900" fill="#ffffff" text-anchor="middle">3</text>
+    <text x="44" y="26" font-size="13" font-weight="800" fill="#ffffff">Sync Orchestrator</text>
+    
+    <!-- Content inside Card 3 -->
+    <rect x="12" y="52" width="191" height="44" rx="6" fill="#fffbeb" stroke="#fde68a"/>
+    <text x="20" y="68" font-size="10.5" font-weight="700" fill="#92400e">Network Event Listener:</text>
+    <text x="20" y="84" font-size="10" fill="#b45309">window.navigator.onLine ➔ ON</text>
+
+    <rect x="12" y="104" width="191" height="54" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="20" y="120" font-size="10.5" font-weight="700" fill="#0f172a">Batch Flush Engine:</text>
+    <text x="20" y="135" font-size="9.5" fill="#475569">• Exponential backoff (2^n)</text>
+    <text x="20" y="148" font-size="9.5" fill="#475569">• Conflict-free serialization</text>
+
+    <rect x="12" y="166" width="191" height="48" rx="6" fill="#ecfdf5" stroke="#a7f3d0"/>
+    <text x="20" y="182" font-size="10" font-weight="700" fill="#065f46">Payload Compression:</text>
+    <text x="20" y="196" font-size="9" fill="#047857">HTTPS JSON POST with JWT</text>
+  </g>
+
+  <!-- Arrow 3 -> 4 -->
+  <path d="M 780 190 L 820 190" fill="none" stroke="#059669" stroke-width="3" marker-end="url(#arrowheadGreen)"/>
+  <rect x="780" y="160" width="40" height="20" rx="4" fill="#059669"/>
+  <text x="800" y="174" font-size="8.5" font-weight="800" fill="#ffffff" text-anchor="middle">HTTPS</text>
+
+  <!-- ================= STAGE 4: SUPABASE CLOUD POSTGRES ================= -->
+  <g transform="translate(825, 80)">
+    <rect x="0" y="0" width="200" height="225" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" filter="url(#cardShadow)"/>
+    <rect x="0" y="0" width="200" height="42" rx="10" fill="url(#greenGrad)"/>
+    <rect x="0" y="30" width="200" height="12" fill="url(#greenGrad)"/>
+    <circle cx="22" cy="21" r="13" fill="#34d399"/>
+    <text x="22" y="26" font-size="13" font-weight="900" fill="#065f46" text-anchor="middle">4</text>
+    <text x="44" y="26" font-size="13" font-weight="800" fill="#ffffff">Supabase Postgres</text>
+    
+    <!-- Content inside Card 4 -->
+    <rect x="10" y="52" width="180" height="46" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+    <text x="18" y="68" font-size="10.5" font-weight="700" fill="#166534">Cloud Commit:</text>
+    <text x="18" y="84" font-size="10" fill="#15803d">RLS Tenant Verification OK</text>
+    <text x="18" y="94" font-size="9" fill="#16a34a">HTTP 200 SYNC_CONFIRMED</text>
+
+    <rect x="10" y="106" width="180" height="52" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+    <text x="18" y="122" font-size="10.5" font-weight="700" fill="#0f172a">Relational Tables Updated:</text>
+    <text x="18" y="137" font-size="9.5" fill="#475569">• maintenance_logs</text>
+    <text x="18" y="149" font-size="9.5" fill="#475569">• parts_used &amp; inventory</text>
+
+    <rect x="10" y="166" width="180" height="48" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="18" y="182" font-size="10" font-weight="700" fill="#1e40af">Supervisor Broadcast:</text>
+    <text x="18" y="196" font-size="9" fill="#1d4ed8">Realtime KPI Dashboard Updated</text>
+  </g>
+</svg>`;
+}
+
+const svgCode = createFigure4Svg();
+fs.writeFileSync(path.join(__dirname, '../pdf_images/fig4_redesigned_offline_sync.svg'), svgCode, 'utf-8');
+console.log('✅ Generated high-res handcrafted Figure 4 SVG!');

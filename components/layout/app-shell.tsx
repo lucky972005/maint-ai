@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   AlertTriangle,
@@ -334,7 +334,13 @@ function BottomNav() {
 function AppHeader({ title, showStatus = true }: { title?: string; showStatus?: boolean }) {
   const { online, profile, demoMode, switchDemoRole, exitDemoMode } = useApp();
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const roleLabel = profile?.role ? profile.role[0].toUpperCase() + profile.role.slice(1) : "Guest";
 
   const handleLogout = async () => {
@@ -369,7 +375,7 @@ function AppHeader({ title, showStatus = true }: { title?: string; showStatus?: 
             <p className="truncate text-xs text-muted-foreground">Apex Manufacturing Plant</p>
           </div>
           <div className="flex items-center gap-2">
-            {demoMode && (
+            {mounted && demoMode && (
               <div className="flex items-center rounded-lg border border-amber-500/30 bg-amber-500/10 p-0.5 text-[11px]">
                 {(["technician", "admin", "supervisor"] as const).map((r) => (
                   <button
@@ -418,7 +424,7 @@ function AppHeader({ title, showStatus = true }: { title?: string; showStatus?: 
           </div>
           <div className="flex flex-1 items-center justify-end gap-3">
             <SearchPalette />
-            {demoMode && (
+            {mounted && demoMode && (
               <div className="flex items-center gap-1 rounded-xl border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-xs text-amber-500">
                 <span className="font-medium text-amber-400">Demo Role:</span>
                 {(["technician", "admin", "supervisor"] as const).map((r) => (

@@ -24,36 +24,55 @@ import type {
 
 const supabase = createClient();
 
+let isSupabaseHealthy = true;
+
+function markSupabaseUnreachable(error?: unknown) {
+  if (isSupabaseHealthy) {
+    console.warn("Supabase endpoint is unreachable or inactive. Switching to instant local industrial cache.", error);
+    isSupabaseHealthy = false;
+  }
+}
+
+function shouldUseSupabase(): boolean {
+  return isSupabaseConfigured() && isSupabaseHealthy;
+}
+
 export async function getMachines(): Promise<Machine[]> {
-  if (!isSupabaseConfigured()) {
+  if (!shouldUseSupabase()) {
     return DEMO_DATA.machines;
   }
   try {
     const { data, error } = await supabase.from("machines").select("*");
-    if (error) throw error;
+    if (error) {
+      markSupabaseUnreachable(error);
+      return DEMO_DATA.machines;
+    }
     return data && data.length > 0 ? data : DEMO_DATA.machines;
   } catch (error) {
-    console.warn("Supabase getMachines failed, using demo data:", error);
+    markSupabaseUnreachable(error);
     return DEMO_DATA.machines;
   }
 }
 
 export async function getMachineById(id: string): Promise<Machine | null> {
-  if (!isSupabaseConfigured()) {
+  if (!shouldUseSupabase()) {
     return getDemoMachineById(id) ?? null;
   }
   try {
     const { data, error } = await supabase.from("machines").select("*").eq("id", id).single();
-    if (error) throw error;
+    if (error) {
+      markSupabaseUnreachable(error);
+      return getDemoMachineById(id) ?? null;
+    }
     return data ?? getDemoMachineById(id) ?? null;
   } catch (error) {
-    console.warn("Supabase getMachineById failed, using demo data:", error);
+    markSupabaseUnreachable(error);
     return getDemoMachineById(id) ?? null;
   }
 }
 
 export async function getMachineByQr(qrCode: string): Promise<Machine | null> {
-  if (!isSupabaseConfigured()) {
+  if (!shouldUseSupabase()) {
     const exact = getDemoMachineByQr(qrCode);
     if (exact) return exact;
     const fuzzy = DEMO_DATA.machines.find((m) =>
@@ -63,9 +82,13 @@ export async function getMachineByQr(qrCode: string): Promise<Machine | null> {
   }
   try {
     const { data, error } = await supabase.from("machines").select("*").eq("qr_code", qrCode).single();
-    if (error) throw error;
+    if (error) {
+      markSupabaseUnreachable(error);
+      return getDemoMachineByQr(qrCode);
+    }
     return data;
-  } catch {
+  } catch (error) {
+    markSupabaseUnreachable(error);
     const exact = getDemoMachineByQr(qrCode);
     if (exact) return exact;
     return DEMO_DATA.machines.find((m) =>
@@ -75,59 +98,75 @@ export async function getMachineByQr(qrCode: string): Promise<Machine | null> {
 }
 
 export async function getProceduresForMachine(machineId: string): Promise<RepairProcedure[]> {
-  if (!isSupabaseConfigured()) {
+  if (!shouldUseSupabase()) {
     return getDemoProcedures(machineId);
   }
   try {
     const { data, error } = await supabase.from("repair_procedures").select("*").eq("machine_id", machineId);
-    if (error) throw error;
+    if (error) {
+      markSupabaseUnreachable(error);
+      return getDemoProcedures(machineId);
+    }
     return data && data.length > 0 ? data : getDemoProcedures(machineId);
-  } catch {
+  } catch (error) {
+    markSupabaseUnreachable(error);
     return getDemoProcedures(machineId);
   }
 }
 
 export async function getProcedureById(id: string): Promise<RepairProcedure | null> {
-  if (!isSupabaseConfigured()) {
+  if (!shouldUseSupabase()) {
     return getDemoProcedureById(id);
   }
   try {
     const { data, error } = await supabase.from("repair_procedures").select("*").eq("id", id).single();
-    if (error) throw error;
+    if (error) {
+      markSupabaseUnreachable(error);
+      return getDemoProcedureById(id);
+    }
     return data ?? getDemoProcedureById(id);
-  } catch {
+  } catch (error) {
+    markSupabaseUnreachable(error);
     return getDemoProcedureById(id);
   }
 }
 
 export async function getParts(): Promise<Part[]> {
-  if (!isSupabaseConfigured()) {
+  if (!shouldUseSupabase()) {
     return DEMO_DATA.parts;
   }
   try {
     const { data, error } = await supabase.from("parts").select("*");
-    if (error) throw error;
+    if (error) {
+      markSupabaseUnreachable(error);
+      return DEMO_DATA.parts;
+    }
     return data && data.length > 0 ? data : DEMO_DATA.parts;
-  } catch {
+  } catch (error) {
+    markSupabaseUnreachable(error);
     return DEMO_DATA.parts;
   }
 }
 
 export async function getLowStockParts(): Promise<Part[]> {
-  if (!isSupabaseConfigured()) {
+  if (!shouldUseSupabase()) {
     return DEMO_DATA.parts.filter((p) => p.stock_quantity < p.min_stock_level);
   }
   try {
     const { data, error } = await supabase.from("parts").select("*").lte("stock_quantity", "min_stock_level");
-    if (error) throw error;
+    if (error) {
+      markSupabaseUnreachable(error);
+      return DEMO_DATA.parts.filter((p) => p.stock_quantity < p.min_stock_level);
+    }
     return data || [];
-  } catch {
+  } catch (error) {
+    markSupabaseUnreachable(error);
     return DEMO_DATA.parts.filter((p) => p.stock_quantity < p.min_stock_level);
   }
 }
 
 export async function getMaintenanceLogs(limit = 50): Promise<MaintenanceLog[]> {
-  if (!isSupabaseConfigured()) {
+  if (!shouldUseSupabase()) {
     return DEMO_DATA.logs.slice(0, limit);
   }
   try {
@@ -136,9 +175,13 @@ export async function getMaintenanceLogs(limit = 50): Promise<MaintenanceLog[]> 
       .select("*")
       .order("created_at", { ascending: false })
       .limit(limit);
-    if (error) throw error;
+    if (error) {
+      markSupabaseUnreachable(error);
+      return DEMO_DATA.logs.slice(0, limit);
+    }
     return data && data.length > 0 ? data : DEMO_DATA.logs.slice(0, limit);
-  } catch {
+  } catch (error) {
+    markSupabaseUnreachable(error);
     return DEMO_DATA.logs.slice(0, limit);
   }
 }

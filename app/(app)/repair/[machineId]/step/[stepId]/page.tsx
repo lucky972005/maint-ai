@@ -5,13 +5,13 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/app-shell";
 import { StepGuide } from "@/components/repair/StepGuide";
-import { getMachineById, getProcedureById } from "@/lib/demo-data";
+import { getMachineById, getProcedureById, getProceduresForMachine, DEMO_DATA } from "@/lib/demo-data";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
 import { useApp } from "@/components/providers";
 import { cacheMaintenanceLog, queueForSync } from "@/lib/offline";
-import { DEMO_DATA } from "@/lib/demo-data";
 import { WorkOrderCertificateModal } from "@/components/certificate/WorkOrderCertificateModal";
+import type { MaintenanceLog } from "@/lib/types";
 
 export default function RepairStepPage() {
   const params = useParams();
@@ -22,62 +22,71 @@ export default function RepairStepPage() {
   const stepId = parseInt(params.stepId as string, 10);
   const procedureId = searchParams.get("procedure");
 
-  const machine = getMachineById(machineId);
-  const procedure = procedureId ? getProcedureById(procedureId) : undefined;
+  const machine =
+    getMachineById(machineId) ??
+    DEMO_DATA.machines.find(
+      (m) =>
+        m.qr_code.toLowerCase().includes(machineId.toLowerCase()) ||
+        m.name.toLowerCase().replace(/[^a-z0-9]/g, "-").includes(machineId.toLowerCase())
+    ) ??
+    DEMO_DATA.machines[0];
+
+  const procedure =
+    (procedureId ? getProcedureById(procedureId) : null) ??
+    getProceduresForMachine(machine.id)[0] ??
+    DEMO_DATA.procedures[0];
+
   const [completionLogged, setCompletionLogged] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
+  const [createdLog, setCreatedLog] = useState<MaintenanceLog | null>(null);
 
   const currentIndex = useMemo(() => Math.max(0, stepId - 1), [stepId]);
 
   useEffect(() => {
     const isComplete = procedure && currentIndex >= procedure.steps.length;
-    const storageKey = `repair-complete:${machineId}:${procedure?.id ?? ""}`;
+    if (!isComplete || !machine || !procedure || createdLog) return;
 
-    if (!isComplete || completionLogged || !machine || !procedure) return;
-    if (typeof window !== "undefined" && window.sessionStorage.getItem(storageKey)) {
-      setCompletionLogged(true);
-      return;
+    let existingLog: MaintenanceLog | null = null;
+    if (typeof window !== "undefined") {
+      try {
+        const stored = window.localStorage.getItem("maintai_saved_logs");
+        if (stored) {
+          const list: MaintenanceLog[] = JSON.parse(stored);
+          existingLog = list.find((l) => l.machine_id === machine.id && l.procedure_id === procedure.id) || null;
+        }
+      } catch {}
     }
 
-    const log = {
-      id: crypto.randomUUID(),
+    const log: MaintenanceLog = existingLog || {
+      id: `wo-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
       machine_id: machine.id,
-      technician_id: profile?.id ?? DEMO_DATA.profiles.find((p) => p.role === "technician")?.id ?? null,
+      technician_id: profile?.id ?? DEMO_DATA.profiles.find((p) => p.role === "technician")?.id ?? "tech-demo",
       procedure_id: procedure.id,
       started_at: new Date(Date.now() - (procedure.estimated_minutes ?? 30) * 60000).toISOString(),
       completed_at: new Date().toISOString(),
       duration_minutes: procedure.estimated_minutes ?? 30,
       status: "completed" as const,
-      notes: `${procedure.procedure_type} completed from guided repair flow.`,
+      notes: `${procedure.procedure_type} on ${machine.name} completed successfully via guided AR inspection.`,
       machine,
       procedure,
-      technician: profile ?? undefined,
+      technician: profile ?? DEMO_DATA.profiles.find((p) => p.role === "technician"),
     };
 
-    Promise.all([cacheMaintenanceLog(log)])
-      .then(() => {
-        return fetch("/api/maintenance-log", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(log),
-        });
-      })
-      .then((response) => {
-        if (!response.ok) {
-          return queueForSync("maintenance_log", log);
-        }
-        return undefined;
-      })
-      .catch(async () => {
-        await queueForSync("maintenance_log", log);
-      })
-      .finally(() => {
-        if (typeof window !== "undefined") {
-          window.sessionStorage.setItem(storageKey, "1");
-        }
-        setCompletionLogged(true);
-      });
-  }, [completionLogged, currentIndex, machine, machineId, profile, procedure]);
+    setCreatedLog(log);
+    setCompletionLogged(true);
+
+    // Save to all persistence layers: IndexedDB, localStorage, and in-memory DEMO_DATA
+    cacheMaintenanceLog(log).catch(console.error);
+
+    // Also notify server in the background (non-blocking)
+    fetch("/api/maintenance-log", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(log),
+    }).catch(() => {
+      queueForSync("maintenance_log", log).catch(() => {});
+    });
+  }, [createdLog, currentIndex, machine, machineId, profile, procedure]);
 
   if (!machine || !procedure) {
     return (
@@ -129,9 +138,14 @@ export default function RepairStepPage() {
             </Button>
           </div>
 
-          <div className="flex gap-2 justify-center pt-2">
+          <div className="flex flex-wrap gap-2 justify-center pt-2">
             <Link href={`/repair/${machineId}`}>
               <Button variant="outline">Back to Machine</Button>
+            </Link>
+            <Link href="/history">
+              <Button variant="outline" className="gap-1.5 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10">
+                📋 View in History
+              </Button>
             </Link>
             <Link href="/scan">
               <Button>Scan Next Machine</Button>
@@ -144,7 +158,9 @@ export default function RepairStepPage() {
           onOpenChange={setShowCertificate}
           machine={machine}
           procedure={procedure}
-          technician={profile}
+          log={createdLog}
+          technician={profile ?? createdLog?.technician}
+          completedAt={createdLog?.completed_at ?? new Date().toISOString()}
         />
       </AppShell>
     );

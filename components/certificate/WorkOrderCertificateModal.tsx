@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +22,7 @@ import {
 import QRCode from "qrcode";
 import { formatDate } from "@/lib/utils";
 import type { Machine, RepairProcedure, MaintenanceLog, Profile } from "@/lib/types";
+import { DEMO_DATA, getMachineById, getProcedureById } from "@/lib/demo-data";
 
 interface CertificateProps {
   open: boolean;
@@ -39,7 +42,7 @@ export function WorkOrderCertificateModal({
   procedure,
   log,
   technician,
-  completedAt = new Date().toISOString(),
+  completedAt,
   partsUsed,
 }: CertificateProps) {
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
@@ -49,33 +52,71 @@ export function WorkOrderCertificateModal({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawing = useRef(false);
 
+  const resolvedMachine = useMemo<Machine>(() => {
+    return (
+      machine ??
+      log?.machine ??
+      (log?.machine_id ? getMachineById(log.machine_id) : null) ??
+      DEMO_DATA.machines[0]
+    );
+  }, [machine, log]);
+
+  const resolvedProcedureName = useMemo(() => {
+    return (
+      procedure?.procedure_type ??
+      log?.procedure?.procedure_type ??
+      (log?.procedure_id ? getProcedureById(log.procedure_id)?.procedure_type : null) ??
+      "Routine Preventive Maintenance"
+    );
+  }, [procedure, log]);
+
+  const safeDate = useMemo(() => {
+    if (completedAt && !isNaN(new Date(completedAt).getTime())) {
+      return completedAt;
+    }
+    return log?.completed_at || log?.started_at || "2026-10-26T00:00:00.000Z";
+  }, [completedAt, log]);
+
   // Generate deterministic/unique certificate ID
   useEffect(() => {
-    if (open && machine) {
-      const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-      const id = log?.id ? `WO-${log.id.slice(0, 8).toUpperCase()}` : `WO-CERT-${randomCode}`;
-      setCertId(id);
+    if (!open) return;
 
-      // Generate verification QR code
-      const verifyData = JSON.stringify({
-        certId: id,
-        machine: machine.name,
-        serial: machine.serial_number,
-        procedure: procedure?.procedure_type ?? log?.procedure?.procedure_type ?? "Maintenance",
-        date: completedAt,
-        status: "VERIFIED_COMPLIANT",
-        authority: "MaintAI Quality Standard ISO-9001",
-      });
+    const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const id = log?.id ? `WO-${log.id.slice(0, 8).toUpperCase()}` : `WO-CERT-${randomCode}`;
+    setCertId(id);
 
-      QRCode.toDataURL(verifyData, {
-        width: 140,
-        margin: 1,
-        color: { dark: "#0f172a", light: "#ffffff" },
-      })
-        .then(setQrCodeUrl)
-        .catch(console.error);
+    // Generate verification QR code
+    const verifyData = JSON.stringify({
+      certId: id,
+      machine: resolvedMachine.name,
+      serial: resolvedMachine.serial_number ?? "SN-100492",
+      procedure: resolvedProcedureName,
+      date: safeDate,
+      status: "VERIFIED_COMPLIANT",
+      authority: "MaintAI Quality Standard ISO-9001",
+    });
+
+    try {
+      const qrcodeLib = QRCode as unknown as {
+        toDataURL?: (text: string, options?: unknown) => Promise<string>;
+        default?: { toDataURL?: (text: string, options?: unknown) => Promise<string> };
+      };
+      const toDataURL = qrcodeLib?.toDataURL || qrcodeLib?.default?.toDataURL;
+      if (typeof toDataURL === "function") {
+        toDataURL(verifyData, {
+          width: 140,
+          margin: 1,
+          color: { dark: "#0f172a", light: "#ffffff" },
+        })
+          .then(setQrCodeUrl)
+          .catch((err) => {
+            console.error("QR generation error:", err);
+          });
+      }
+    } catch (err) {
+      console.error("QR generation exception:", err);
     }
-  }, [open, machine, procedure, log, completedAt]);
+  }, [open, resolvedMachine.name, resolvedMachine.serial_number, resolvedProcedureName, log?.id, safeDate]);
 
   // Setup Canvas Signature Pad
   useEffect(() => {
@@ -138,10 +179,6 @@ export function WorkOrderCertificateModal({
     window.print();
   };
 
-  if (!machine) return null;
-
-  const resolvedProcedureName =
-    procedure?.procedure_type ?? log?.procedure?.procedure_type ?? "Routine Preventive Maintenance";
   const resolvedTechName =
     technician?.full_name ?? log?.technician?.full_name ?? "Raj Kumar (Tech ID #8492)";
   const duration = log?.duration_minutes ?? procedure?.estimated_minutes ?? 35;
@@ -155,6 +192,11 @@ export function WorkOrderCertificateModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto p-0 border-border/80 bg-background shadow-2xl">
+        <DialogTitle className="sr-only">Industrial Work Order & Inspection Certificate</DialogTitle>
+        <DialogDescription className="sr-only">
+          Official ISO-9001 certified maintenance work order and quality sign-off document.
+        </DialogDescription>
+
         {/* Modal Controls Bar */}
         <div className="sticky top-0 z-20 flex items-center justify-between border-b bg-muted/80 backdrop-blur px-6 py-3 no-print">
           <div className="flex items-center gap-2">
@@ -202,7 +244,7 @@ export function WorkOrderCertificateModal({
                 CERTIFICATE ID: <span className="font-bold text-slate-800">{certId}</span>
               </p>
               <p className="text-[11px] text-slate-500">
-                Issued: {formatDate(completedAt)}
+                Issued: {formatDate(safeDate)}
               </p>
             </div>
           </div>
@@ -211,11 +253,11 @@ export function WorkOrderCertificateModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200 text-sm">
             <div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Equipment Identified</p>
-              <h3 className="font-bold text-base text-slate-900">{machine.name}</h3>
-              <p className="text-xs text-slate-600">Model: <span className="font-semibold text-slate-800">{machine.model || "N/A"}</span></p>
-              <p className="text-xs text-slate-600">Manufacturer: <span className="font-semibold text-slate-800">{machine.manufacturer || "OEM"}</span></p>
-              <p className="text-xs text-slate-600">Serial No: <span className="font-mono text-slate-800">{machine.serial_number || "SN-100492"}</span></p>
-              <p className="text-xs text-slate-600">Location: <span className="text-slate-800">{machine.location || "Bay A - Floor 1"}</span></p>
+              <h3 className="font-bold text-base text-slate-900">{resolvedMachine.name}</h3>
+              <p className="text-xs text-slate-600">Model: <span className="font-semibold text-slate-800">{resolvedMachine.model || "N/A"}</span></p>
+              <p className="text-xs text-slate-600">Manufacturer: <span className="font-semibold text-slate-800">{resolvedMachine.manufacturer || "OEM"}</span></p>
+              <p className="text-xs text-slate-600">Serial No: <span className="font-mono text-slate-800">{resolvedMachine.serial_number || "SN-100492"}</span></p>
+              <p className="text-xs text-slate-600">Location: <span className="text-slate-800">{resolvedMachine.location || "Bay A - Floor 1"}</span></p>
             </div>
 
             <div>

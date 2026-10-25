@@ -420,7 +420,7 @@ export function generateDemoLogs(
     const status = i % 8 === 0 ? "in_progress" : i % 12 === 0 ? "abandoned" : "completed";
 
     logs.push({
-      id: uuid(),
+      id: `log-${i + 1}-${STATIC_UUIDS[i % STATIC_UUIDS.length]}`,
       machine_id: machine.id,
       technician_id: tech.id,
       procedure_id: procedure?.id ?? null,
@@ -504,7 +504,20 @@ export const DEMO_DATA = {
 };
 
 export function getMachineById(id: string): Machine | null {
-  return DEMO_DATA.machines.find((m) => m.id === id) || null;
+  if (!id) return null;
+  const direct = DEMO_DATA.machines.find((m) => m.id === id);
+  if (direct) return direct;
+
+  const clean = id.replace(/^MACHINE:/i, "").toLowerCase();
+  return (
+    DEMO_DATA.machines.find(
+      (m) =>
+        m.qr_code.toLowerCase() === id.toLowerCase() ||
+        m.qr_code.toLowerCase().includes(clean) ||
+        (m.serial_number && m.serial_number.toLowerCase() === clean) ||
+        m.name.toLowerCase().replace(/[^a-z0-9]/g, "-") === clean
+    ) || null
+  );
 }
 
 export function getMachineByQr(qrCode: string): Machine | null {
@@ -514,11 +527,22 @@ export function getMachineByQr(qrCode: string): Machine | null {
 }
 
 export function getProceduresForMachine(machineId: string): RepairProcedure[] {
-  return DEMO_DATA.procedures.filter((p) => p.machine_id === machineId);
+  const machine = getMachineById(machineId);
+  const targetId = machine ? machine.id : machineId;
+  const procs = DEMO_DATA.procedures.filter((p) => p.machine_id === targetId);
+  return procs.length > 0 ? procs : DEMO_DATA.procedures.slice(0, 6);
 }
 
 export function getProcedureById(id: string): RepairProcedure | null {
-  return DEMO_DATA.procedures.find((p) => p.id === id) || null;
+  if (!id) return null;
+  const direct = DEMO_DATA.procedures.find((p) => p.id === id);
+  if (direct) return direct;
+
+  return (
+    DEMO_DATA.procedures.find(
+      (p) => p.procedure_type.toLowerCase() === id.toLowerCase()
+    ) || null
+  );
 }
 
 export function isSupabaseConfigured(): boolean {

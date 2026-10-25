@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DEMO_DATA, isFirebaseConfigured } from "@/lib/demo-data";
+import { DEMO_DATA, isFirebaseConfigured, getMachineById, getProcedureById } from "@/lib/demo-data";
 import { getMaintenanceLogs } from "@/lib/database";
 import { formatDate, formatDuration } from "@/lib/utils";
 import { useApp } from "@/components/providers";
@@ -30,22 +30,80 @@ export default function HistoryPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      const firebaseConfigured = isFirebaseConfigured();
-      setUseRealData(firebaseConfigured);
+      // 1. Base demo logs
+      let baseLogs: MaintenanceLog[] = [...DEMO_DATA.logs];
 
-      if (firebaseConfigured) {
+      // 2. Fetch server-side logs if database configured
+      if (isFirebaseConfigured()) {
         try {
           const logsData = await getMaintenanceLogs(200);
-          setLogs(logsData);
+          if (Array.isArray(logsData) && logsData.length > 0) {
+            baseLogs = logsData;
+            setUseRealData(true);
+          }
         } catch (error) {
-          console.error("Failed to load logs from Firebase:", error);
-        }
-      } else {
-        const cached = await getCachedMaintenanceLogs();
-        if (cached.length > 0) {
-          setLogs(cached);
+          console.warn("Server logs load failed:", error);
         }
       }
+
+      // 3. Read cached logs from IndexedDB
+      let dbLogs: MaintenanceLog[] = [];
+      try {
+        dbLogs = await getCachedMaintenanceLogs();
+      } catch (err) {
+        console.warn("IndexedDB load error:", err);
+      }
+
+      // 4. Read localStorage saved logs
+      let localLogs: MaintenanceLog[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          localLogs = JSON.parse(window.localStorage.getItem("maintai_saved_logs") || "[]");
+        } catch {}
+      }
+
+      // 5. Merge all sources uniquely by id
+      const map = new Map<string, MaintenanceLog>();
+      
+      // Add base logs first
+      baseLogs.forEach((l) => map.set(l.id, l));
+      
+      // Add cached & local storage logs next (these take priority and include the newest completed repair)
+      [...dbLogs, ...localLogs].forEach((l) => map.set(l.id, l));
+
+      // 6. Ensure every log has resolved machine and procedure objects
+      const merged = Array.from(map.values()).map((l) => {
+        const resolvedMachine =
+          l.machine ||
+          (l.machine_id ? getMachineById(l.machine_id) : null) ||
+          DEMO_DATA.machines[0];
+
+        const resolvedProcedure =
+          l.procedure ||
+          (l.procedure_id ? getProcedureById(l.procedure_id) : null) ||
+          DEMO_DATA.procedures[0];
+
+        const resolvedTech =
+          l.technician ||
+          (l.technician_id ? DEMO_DATA.profiles.find((p) => p.id === l.technician_id) : null) ||
+          DEMO_DATA.profiles.find((p) => p.role === "technician");
+
+        return {
+          ...l,
+          machine: resolvedMachine,
+          procedure: resolvedProcedure,
+          technician: resolvedTech,
+        };
+      });
+
+      // 7. Sort newest first (by completed_at or started_at)
+      merged.sort((a, b) => {
+        const timeA = new Date(a.completed_at || a.started_at).getTime();
+        const timeB = new Date(b.completed_at || b.started_at).getTime();
+        return timeB - timeA;
+      });
+
+      setLogs(merged);
       setLoading(false);
     };
 

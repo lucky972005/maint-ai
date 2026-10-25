@@ -1,5 +1,6 @@
 import Dexie, { type Table } from "dexie";
 import type { FaultReport, Machine, RepairProcedure, Profile, MaintenanceLog } from "./types";
+import { DEMO_DATA } from "./demo-data";
 
 export interface CachedManual {
   id: string;
@@ -40,6 +41,15 @@ class MaintenanceDB extends Dexie {
       syncQueue: "++id, type, createdAt",
       maintenanceLogs: "id, machine_id, technician_id, status",
       faultReports: "id, machine_id, reported_by, status",
+    });
+    this.version(2).stores({
+      machines: "id, qr_code, factory_id, category",
+      procedures: "id, machine_id, procedure_type",
+      profile: "id",
+      manuals: "id, machineId",
+      syncQueue: "++id, type, createdAt",
+      maintenanceLogs: "id, machine_id, technician_id, status, started_at, completed_at",
+      faultReports: "id, machine_id, reported_by, status, created_at",
     });
   }
 }
@@ -115,15 +125,61 @@ export async function cacheFaultReport(
 }
 
 export async function getCachedFaultReports(): Promise<CachedFaultReport[]> {
-  return getDB().faultReports.orderBy("created_at").reverse().toArray();
+  try {
+    const list = await getDB().faultReports.toArray();
+    return list.sort(
+      (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+    );
+  } catch (err) {
+    console.warn("getCachedFaultReports error:", err);
+    return [];
+  }
 }
 
 export async function cacheMaintenanceLog(log: MaintenanceLog): Promise<void> {
-  await getDB().maintenanceLogs.put(log);
+  try {
+    await getDB().maintenanceLogs.put(log);
+  } catch (e) {
+    console.warn("IndexedDB cache error:", e);
+  }
+  // Store in DEMO_DATA so in-memory pages have it immediately
+  if (!DEMO_DATA.logs.some((l) => l.id === log.id)) {
+    DEMO_DATA.logs.unshift(log);
+  }
+  // Also store in localStorage as client fallback
+  if (typeof window !== "undefined") {
+    try {
+      const stored = JSON.parse(window.localStorage.getItem("maintai_saved_logs") || "[]");
+      if (!stored.some((item: MaintenanceLog) => item.id === log.id)) {
+        window.localStorage.setItem("maintai_saved_logs", JSON.stringify([log, ...stored]));
+      }
+    } catch {}
+  }
 }
 
 export async function getCachedMaintenanceLogs(): Promise<MaintenanceLog[]> {
-  return getDB().maintenanceLogs.orderBy("started_at").reverse().toArray();
+  try {
+    let dbLogs: MaintenanceLog[] = [];
+    try {
+      dbLogs = await getDB().maintenanceLogs.toArray();
+    } catch (e) {
+      console.warn("IndexedDB toArray read error:", e);
+    }
+    let localLogs: MaintenanceLog[] = [];
+    if (typeof window !== "undefined") {
+      try {
+        localLogs = JSON.parse(window.localStorage.getItem("maintai_saved_logs") || "[]");
+      } catch {}
+    }
+    const map = new Map<string, MaintenanceLog>();
+    dbLogs.forEach((l) => map.set(l.id, l));
+    localLogs.forEach((l) => map.set(l.id, l));
+    return Array.from(map.values()).sort(
+      (a, b) => new Date(b.completed_at || b.started_at).getTime() - new Date(a.completed_at || a.started_at).getTime()
+    );
+  } catch {
+    return [];
+  }
 }
 
 export async function getSyncQueue(): Promise<SyncQueueItem[]> {

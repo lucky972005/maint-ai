@@ -7,11 +7,18 @@ const AUTH_ROUTES = ["/login", "/signup"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  const isAuthenticated = !!session;
   const isDemoSession = request.cookies.get(DEMO_COOKIE)?.value === "1" || request.nextUrl.searchParams.get("demo") === "1";
+
+  let isAuthenticated = false;
+  if (!isDemoSession) {
+    try {
+      const supabase = await createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      isAuthenticated = !!session;
+    } catch {
+      isAuthenticated = false;
+    }
+  }
 
   const isStaticFile = pathname.includes(".") || pathname.startsWith("/parts/") || pathname.startsWith("/machines/");
 

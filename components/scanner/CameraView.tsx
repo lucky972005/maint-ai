@@ -36,8 +36,21 @@ export function CameraView({
       return;
     }
 
-    navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: "environment" }, audio: false })
+    const acquireCamera = async () => {
+      try {
+        return await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" } },
+          audio: false,
+        });
+      } catch {
+        return await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false,
+        });
+      }
+    };
+
+    acquireCamera()
       .then((mediaStream) => {
         if (!active) {
           mediaStream.getTracks().forEach((t) => t.stop());

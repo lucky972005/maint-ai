@@ -12,12 +12,23 @@ export function formatDuration(minutes: number): string {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-export function formatDate(date: string | Date): string {
-  return new Date(date).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+export function formatDate(date: string | Date | null | undefined): string {
+  try {
+    if (!date) {
+      return new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+    }
+    const d = new Date(date);
+    if (isNaN(d.getTime())) {
+      return new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+    }
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  }
 }
 
 export function slugify(text: string): string {
