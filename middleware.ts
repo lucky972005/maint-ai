@@ -13,7 +13,14 @@ export async function middleware(request: NextRequest) {
   const isAuthenticated = !!session;
   const isDemoSession = request.cookies.get(DEMO_COOKIE)?.value === "1" || request.nextUrl.searchParams.get("demo") === "1";
 
-  if (PROTECTED_ROUTES.some((r) => pathname.startsWith(r)) && !isAuthenticated && !isDemoSession) {
+  const isStaticFile = pathname.includes(".") || pathname.startsWith("/parts/") || pathname.startsWith("/machines/");
+
+  if (
+    !isStaticFile &&
+    PROTECTED_ROUTES.some((r) => pathname === r || pathname.startsWith(r + "/")) &&
+    !isAuthenticated &&
+    !isDemoSession
+  ) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -26,6 +33,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|icons|manifest|sw|workbox|api).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icons|machines|parts|manifest|sw|workbox|api|.*\\.(?:jpg|jpeg|gif|png|svg|ico|webp|webmanifest)$).*)",
   ],
 };

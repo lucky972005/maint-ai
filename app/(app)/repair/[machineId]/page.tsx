@@ -12,17 +12,26 @@ import {
   Plug,
   RefreshCw,
   ShieldAlert,
+  UserPlus,
   Wrench,
   Zap,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import type { Machine, RepairProcedure } from "@/lib/types";
+import type { Machine, RepairProcedure, Profile } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
-import { getMachineById as getMachineByIdFromDb, getProceduresForMachine as getProceduresForMachineFromDb, updateMachine } from "@/lib/database";
+import {
+  getMachineById as getMachineByIdFromDb,
+  getProceduresForMachine as getProceduresForMachineFromDb,
+  updateMachine,
+  getTechnicians,
+  getMachines,
+} from "@/lib/database";
 import { getMachineById, getProceduresForMachine } from "@/lib/demo-data";
 import { ImageManager } from "@/components/image-manager";
+import { useApp } from "@/components/providers";
+import { CreateWorkOrderModal } from "@/components/assignments/CreateWorkOrderModal";
 
 const PROCEDURE_ICONS: Record<string, LucideIcon> = {
   "Oil Change": Wrench,
@@ -37,14 +46,27 @@ export default function RepairPage() {
   const params = useParams();
   const router = useRouter();
   const machineId = params.machineId as string;
+  const { profile } = useApp();
   const [machine, setMachine] = useState<Machine | null>(null);
   const [procedures, setProcedures] = useState<RepairProcedure[]>([]);
+  const [technicians, setTechnicians] = useState<Profile[]>([]);
+  const [allMachines, setAllMachines] = useState<Machine[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Dispatch work order modal state for supervisors/admins
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [selectedProcedureName, setSelectedProcedureName] = useState("");
+
+  const isSupervisorOrAdmin = profile?.role === "admin" || profile?.role === "supervisor";
 
   useEffect(() => {
     async function loadData() {
       try {
+        // Load technicians and all machines for assignment modal
+        getTechnicians().then(setTechnicians).catch(() => {});
+        getMachines().then(setAllMachines).catch(() => {});
+
         // Try database first
         const machineData = await getMachineByIdFromDb(machineId);
         const proceduresData = await getProceduresForMachineFromDb(machineId);
@@ -165,45 +187,91 @@ export default function RepairPage() {
           </div>
         </Card>
 
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Maintenance Procedures</h3>
-          <ImageManager
-            entityType="machine"
-            entityId={machineId}
-            existingImages={machine.images || []}
-            onImagesUpdate={async (newImages) => {
-              if (machine) {
-                try {
-                  await updateMachine(machineId, { images: newImages });
-                  setMachine({ ...machine, images: newImages });
-                } catch (error) {
-                  console.error("Failed to update machine images:", error);
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 className="text-lg font-semibold">Maintenance Procedures</h3>
+            <p className="text-xs text-muted-foreground">Execute AR step-by-step guidance or dispatch procedures to technicians</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {isSupervisorOrAdmin && (
+              <Button
+                size="sm"
+                className="orange-glow text-xs gap-1.5 bg-primary text-primary-foreground font-medium"
+                onClick={() => {
+                  setSelectedProcedureName("");
+                  setAssignModalOpen(true);
+                }}
+              >
+                <UserPlus className="h-4 w-4" />
+                <span>Assign Work Order</span>
+              </Button>
+            )}
+            <ImageManager
+              entityType="machine"
+              entityId={machineId}
+              existingImages={machine.images || []}
+              onImagesUpdate={async (newImages) => {
+                if (machine) {
+                  try {
+                    await updateMachine(machineId, { images: newImages });
+                    setMachine({ ...machine, images: newImages });
+                  } catch (error) {
+                    console.error("Failed to update machine images:", error);
+                  }
                 }
-              }
-            }}
-          />
+              }}
+            />
+          </div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {procedures.map((procedure) => {
             const Icon = PROCEDURE_ICONS[procedure.procedure_type] ?? Wrench;
             return (
-              <Button
+              <div
                 key={procedure.id}
-                variant="outline"
-                className="h-auto flex-col items-start gap-3 rounded-2xl border-border/70 px-5 py-5 text-left hover:border-primary hover:bg-primary/5"
-                onClick={() => startProcedure(procedure.id)}
+                className="flex flex-col justify-between rounded-2xl border border-border/70 bg-card/60 p-5 hover:border-primary/50 transition-all shadow-sm"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-                  <Icon className="h-5 w-5" />
+                <div className="flex items-start gap-3.5">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <span className="block text-base font-semibold text-foreground">{procedure.procedure_type}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {procedure.estimated_minutes} min • {procedure.difficulty} difficulty
+                    </span>
+                    <span className="block text-[11px] text-muted-foreground mt-1">
+                      {procedure.steps.length} steps • Tools: {procedure.required_tools.slice(0, 2).join(", ")}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className="block text-sm font-medium">{procedure.procedure_type}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {procedure.estimated_minutes} min - {procedure.difficulty}
-                  </span>
+
+                <div className="mt-4 flex items-center gap-2 border-t border-border/50 pt-3">
+                  <Button
+                    size="sm"
+                    className="flex-1 text-xs"
+                    onClick={() => startProcedure(procedure.id)}
+                  >
+                    Start Procedure
+                  </Button>
+                  {isSupervisorOrAdmin && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="text-xs gap-1"
+                      onClick={() => {
+                        setSelectedProcedureName(procedure.procedure_type);
+                        setAssignModalOpen(true);
+                      }}
+                      title="Assign this procedure to a technician"
+                    >
+                      <UserPlus className="h-3.5 w-3.5" />
+                      <span>Assign</span>
+                    </Button>
+                  )}
                 </div>
-              </Button>
+              </div>
             );
           })}
         </div>
@@ -228,6 +296,16 @@ export default function RepairPage() {
             </Button>
           </Link>
         </div>
+
+        {/* Dispatch Work Order Modal for Admin and Supervisor */}
+        <CreateWorkOrderModal
+          open={assignModalOpen}
+          onOpenChange={setAssignModalOpen}
+          machines={allMachines.length > 0 ? allMachines : (machine ? [machine] : [])}
+          technicians={technicians}
+          initialMachineId={machineId}
+          initialProcedureName={selectedProcedureName}
+        />
       </div>
     </AppShell>
   );

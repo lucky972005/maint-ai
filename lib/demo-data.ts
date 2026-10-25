@@ -278,36 +278,42 @@ const MACHINE_IMAGES_MAP: Record<string, string[]> = {
 };
 
 const PART_DEFS = [
-  { name: "V-Belt A68", category: "Mechanical", supplier: "Gates Industrial", lead_time_days: 2, image: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop&q=80", description: "Heavy-duty wrapped classical V-belt for industrial drive transmissions." },
-  { name: "Oil Filter OF-200", category: "Mechanical", supplier: "Donaldson Filtration", lead_time_days: 1, image: "https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=500&auto=format&fit=crop&q=80", description: "High-efficiency spin-on hydraulic and lubricant oil filter element." },
-  { name: "Ball Bearing 6205", category: "Mechanical", supplier: "SKF Bearings", lead_time_days: 3, image: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=500&auto=format&fit=crop&q=80", description: "Deep groove single-row chrome steel ball bearing (25x52x15mm)." },
-  { name: "Gasket Set GS-100", category: "Consumable", supplier: "Flexitallic Gaskets", lead_time_days: 2, image: "https://images.unsplash.com/photo-1581092446327-9b52bd1570c2?w=500&auto=format&fit=crop&q=80", description: "Universal graphite & PTFE flange gasket replacement kit." },
-  { name: "Hydraulic Seal HS-45", category: "Hydraulic", supplier: "Parker Hannifin", lead_time_days: 4, image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&auto=format&fit=crop&q=80", description: "High-pressure polyurethane rod/piston U-cup seal (45mm ID)." },
-  { name: "Motor Coupling MC-12", category: "Mechanical", supplier: "Lovejoy Couplings", lead_time_days: 3, image: "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=500&auto=format&fit=crop&q=80", description: "Jaw-type flexible shaft elastomer coupling hub." },
-  { name: "Drive Belt DB-900", category: "Mechanical", supplier: "Continental ContiTech", lead_time_days: 2, image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=500&auto=format&fit=crop&q=80", description: "Synchronous timing belt with high tensile fiberglass cords." },
-  { name: "Air Filter AF-300", category: "Pneumatic", supplier: "Festo Pneumatics", lead_time_days: 1, image: "https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?w=500&auto=format&fit=crop&q=80", description: "Sintered bronze 5-micron compressed air particulate filter." },
-  { name: "Coolant Pump CP-55", category: "Hydraulic", supplier: "Grundfos Direct", lead_time_days: 5, image: "https://images.unsplash.com/photo-1581092162384-8987c1d64718?w=500&auto=format&fit=crop&q=80", description: "Submerged coolant & cutting fluid circulation pump (55 L/min)." },
-  { name: "Fuse 32A", category: "Electrical", supplier: "Bussmann / Eaton", lead_time_days: 1, image: "https://images.unsplash.com/photo-1555664424-778a1e5e1b48?w=500&auto=format&fit=crop&q=80", description: "Industrial ceramic high-breaking capacity cartridge fuse (32A 500V)." },
-  { name: "Contactor LC1D25", category: "Electrical", supplier: "Schneider Electric", lead_time_days: 2, image: "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=500&auto=format&fit=crop&q=80", description: "3-Pole 25A motor control magnetic AC contactor 24V coil." },
-  { name: "Relay 24V DC", category: "Electrical", supplier: "Omron Automation", lead_time_days: 2, image: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&auto=format&fit=crop&q=80", description: "Miniature plug-in electromagnetic control relay with LED indicator." },
-  { name: "Pressure Switch PS-100", category: "Pneumatic", supplier: "Danfoss Controls", lead_time_days: 3, image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=500&auto=format&fit=crop&q=80", description: "Adjustable range differential pressure switch 0-10 bar." },
-  { name: "Temperature Sensor TS-200", category: "Electrical", supplier: "Endress+Hauser", lead_time_days: 3, image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=500&auto=format&fit=crop&q=80", description: "PT100 RTD mineral-insulated probe sensor with terminal head." },
-  { name: "Lubrication Grease LG-500", category: "Consumable", supplier: "Mobil Industrial", lead_time_days: 1, image: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=500&auto=format&fit=crop&q=80", description: "NLGI 2 extreme-pressure synthetic lithium complex grease (500g cartridge)." },
-  { name: "Chain Link CL-38", category: "Mechanical", supplier: "Tsubaki Chain", lead_time_days: 2, image: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=500&auto=format&fit=crop&q=80", description: "ANSI #40 master connecting chain link with spring clip." },
-  { name: "Sprocket SP-24", category: "Mechanical", supplier: "Martin Sprocket", lead_time_days: 3, image: "https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=500&auto=format&fit=crop&q=80", description: "24-Tooth hardened carbon steel roller chain sprocket (B-hub)." },
-  { name: "Pulley PL-6", category: "Mechanical", supplier: "TB Wood's", lead_time_days: 3, image: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop&q=80", description: "6-inch cast iron single-groove A-section V-belt sheave pulley." },
-  { name: "Shaft Seal SS-30", category: "Mechanical", supplier: "Timken Seals", lead_time_days: 2, image: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=500&auto=format&fit=crop&q=80", description: "Rotary double-lip oil shaft seal with garter spring (30mm)." },
-  { name: "O-Ring Kit OR-50", category: "Consumable", supplier: "Parker O-Rings", lead_time_days: 1, image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&auto=format&fit=crop&q=80", description: "386-Piece NBR 70 Shore A metric O-ring assortment case." },
-  { name: "Terminal Block TB-12", category: "Electrical", supplier: "Phoenix Contact", lead_time_days: 2, image: "https://images.unsplash.com/photo-1555664424-778a1e5e1b48?w=500&auto=format&fit=crop&q=80", description: "DIN-rail feed-through spring cage terminal blocks (pack of 10)." },
-  { name: "Cable Gland CG-25", category: "Electrical", supplier: "LAPP Group", lead_time_days: 2, image: "https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=500&auto=format&fit=crop&q=80", description: "Nickel-plated brass IP68 waterproof strain relief cable gland (M25)." },
-  { name: "Limit Switch LS-10", category: "Electrical", supplier: "Honeywell Sensing", lead_time_days: 3, image: "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=500&auto=format&fit=crop&q=80", description: "Heavy-duty roller lever enclosed position limit switch (1NO/1NC)." },
-  { name: "Proximity Sensor PR-18", category: "Electrical", supplier: "IFM Efector", lead_time_days: 3, image: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&auto=format&fit=crop&q=80", description: "M18 Inductive proximity switch PNP normally open (8mm sensing)." },
-  { name: "Encoder EN-1024", category: "Electrical", supplier: "Sick Sensor Intelligence", lead_time_days: 4, image: "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=500&auto=format&fit=crop&q=80", description: "1024 PPR incremental optical rotary encoder with HTL output." },
-  { name: "Servo Cable SC-5M", category: "Electrical", supplier: "Igus Motion Plastics", lead_time_days: 2, image: "https://images.unsplash.com/photo-1555664424-778a1e5e1b48?w=500&auto=format&fit=crop&q=80", description: "5-Meter high-flex shielded power & feedback servo drive cable." },
-  { name: "PLC Module IM-16", category: "Electrical", supplier: "Siemens Automation", lead_time_days: 4, image: "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?w=500&auto=format&fit=crop&q=80", description: "16-Channel 24V DC digital input slice module for S7 system." },
-  { name: "Transformer Fuse TF-63", category: "Electrical", supplier: "ABB Electrification", lead_time_days: 3, image: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=500&auto=format&fit=crop&q=80", description: "63A 12kV medium voltage current-limiting back-up fuse link." },
-  { name: "Cooling Fan CF-120", category: "Mechanical", supplier: "ebm-papst", lead_time_days: 2, image: "https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?w=500&auto=format&fit=crop&q=80", description: "120mm ball-bearing 230V AC cabinet ventilation exhaust fan." },
-  { name: "Heating Element HE-3kW", category: "Electrical", supplier: "Watlow Thermal", lead_time_days: 4, image: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=500&auto=format&fit=crop&q=80", description: "3kW 415V Incoloy screw-plug industrial immersion heating element." },
+  { name: "V-Belt A68", category: "Mechanical", supplier: "Gates Industrial", lead_time_days: 2, price: 45.00, image: "/parts/v-belt-a68.jpg", description: "Heavy-duty wrapped classical V-belt for industrial drive transmissions." },
+  { name: "Oil Filter OF-200", category: "Consumable", supplier: "Donaldson Filtration", lead_time_days: 1, price: 28.50, image: "/parts/oil-filter-of-200.jpg", description: "High-efficiency spin-on hydraulic and lubricant oil filter element." },
+  { name: "Ball Bearing 6205", category: "Mechanical", supplier: "SKF Bearings", lead_time_days: 3, price: 35.00, image: "/parts/ball-bearing-6205.jpg", description: "Deep groove single-row chrome steel ball bearing (25x52x15mm)." },
+  { name: "Gasket Set GS-100", category: "Consumable", supplier: "Flexitallic Gaskets", lead_time_days: 2, price: 42.00, image: "/parts/gasket-set-gs-100.jpg", description: "Universal graphite & PTFE flange gasket replacement kit." },
+  { name: "Hydraulic Seal HS-45", category: "Hydraulic", supplier: "Parker Hannifin", lead_time_days: 4, price: 125.00, image: "/parts/hydraulic-seal-hs-45.jpg", description: "High-pressure polyurethane rod/piston U-cup seal (45mm ID)." },
+  { name: "Motor Coupling MC-12", category: "Mechanical", supplier: "Lovejoy Couplings", lead_time_days: 3, price: 89.00, image: "/parts/motor-coupling-mc-12.jpg", description: "Jaw-type flexible shaft elastomer coupling hub with spider insert." },
+  { name: "Drive Belt DB-900", category: "Mechanical", supplier: "Continental ContiTech", lead_time_days: 2, price: 52.00, image: "/parts/drive-belt-db-900.jpg", description: "Synchronous toothed timing belt with high tensile fiberglass cords." },
+  { name: "Air Filter AF-300", category: "Pneumatic", supplier: "Festo Pneumatics", lead_time_days: 1, price: 42.00, image: "/parts/air-filter-af-300.jpg", description: "Sintered bronze 5-micron compressed air particulate filter regulator." },
+  { name: "Coolant Pump CP-55", category: "Hydraulic", supplier: "Grundfos Direct", lead_time_days: 5, price: 245.00, image: "/parts/coolant-pump-cp-55.jpg", description: "Submerged coolant & cutting fluid circulation pump (55 L/min)." },
+  { name: "Fuse 32A", category: "Electrical", supplier: "Bussmann / Eaton", lead_time_days: 1, price: 18.00, image: "/parts/fuse-32a.jpg", description: "Industrial ceramic high-breaking capacity cartridge fuse (32A 500V)." },
+  { name: "Contactor LC1D25", category: "Electrical", supplier: "Schneider Electric", lead_time_days: 2, price: 65.00, image: "/parts/contactor-lc1d25.jpg", description: "3-Pole 25A motor control magnetic AC contactor 24V coil." },
+  { name: "Relay 24V DC", category: "Electrical", supplier: "Omron Automation", lead_time_days: 2, price: 22.00, image: "/parts/relay-24v-dc.jpg", description: "Miniature plug-in electromagnetic control relay with LED indicator." },
+  { name: "Pressure Switch PS-100", category: "Pneumatic", supplier: "Danfoss Controls", lead_time_days: 3, price: 78.00, image: "/parts/pressure-switch-ps-100.jpg", description: "Adjustable range differential pressure switch 0-10 bar." },
+  { name: "Temperature Sensor TS-200", category: "Electrical", supplier: "Endress+Hauser", lead_time_days: 3, price: 95.00, image: "/parts/temperature-sensor-ts-200.jpg", description: "PT100 RTD mineral-insulated probe sensor with terminal head." },
+  { name: "Lubrication Grease LG-500", category: "Consumable", supplier: "Mobil Industrial", lead_time_days: 1, price: 35.00, image: "/parts/lubrication-grease-lg-500.jpg", description: "NLGI 2 extreme-pressure synthetic lithium complex grease (500g cartridge)." },
+  { name: "Chain Link CL-38", category: "Mechanical", supplier: "Tsubaki Chain", lead_time_days: 2, price: 28.00, image: "/parts/chain-link-cl-38.jpg", description: "ANSI #40 master connecting roller chain link with spring clip." },
+  { name: "Sprocket SP-24", category: "Mechanical", supplier: "Martin Sprocket", lead_time_days: 3, price: 55.00, image: "/parts/sprocket-sp-24.jpg", description: "24-Tooth hardened carbon steel roller chain sprocket (B-hub)." },
+  { name: "Pulley PL-6", category: "Mechanical", supplier: "TB Wood's", lead_time_days: 3, price: 42.00, image: "/parts/pulley-pl-6.jpg", description: "6-inch cast iron single-groove A-section V-belt sheave pulley." },
+  { name: "Shaft Seal SS-30", category: "Mechanical", supplier: "Timken Seals", lead_time_days: 2, price: 38.00, image: "/parts/shaft-seal-ss-30.jpg", description: "Rotary double-lip oil shaft seal with garter spring (30mm)." },
+  { name: "O-Ring Kit OR-50", category: "Consumable", supplier: "Parker O-Rings", lead_time_days: 1, price: 45.00, image: "/parts/o-ring-kit-or-50.jpg", description: "386-Piece NBR 70 Shore A metric O-ring assortment case." },
+  { name: "Terminal Block TB-12", category: "Electrical", supplier: "Phoenix Contact", lead_time_days: 2, price: 12.00, image: "/parts/terminal-block-tb-12.jpg", description: "DIN-rail feed-through spring cage terminal blocks (pack of 10)." },
+  { name: "Cable Gland CG-25", category: "Electrical", supplier: "LAPP Group", lead_time_days: 2, price: 8.50, image: "/parts/cable-gland-cg-25.jpg", description: "Nickel-plated brass IP68 waterproof strain relief cable gland (M25)." },
+  { name: "Limit Switch LS-10", category: "Electrical", supplier: "Honeywell Sensing", lead_time_days: 3, price: 32.00, image: "/parts/limit-switch-ls-10.jpg", description: "Heavy-duty roller lever enclosed position limit switch (1NO/1NC)." },
+  { name: "Proximity Sensor PR-18", category: "Electrical", supplier: "IFM Efector", lead_time_days: 3, price: 85.00, image: "/parts/proximity-sensor-pr-18.jpg", description: "M18 Inductive proximity switch PNP normally open (8mm sensing)." },
+  { name: "Encoder EN-1024", category: "Electrical", supplier: "Sick Sensor Intelligence", lead_time_days: 4, price: 185.00, image: "/parts/encoder-en-1024.jpg", description: "1024 PPR incremental optical rotary encoder with HTL output." },
+  { name: "Servo Cable SC-5M", category: "Electrical", supplier: "Igus Motion Plastics", lead_time_days: 2, price: 120.00, image: "/parts/servo-cable-sc-5m.jpg", description: "5-Meter high-flex shielded power & feedback servo drive cable." },
+  { name: "PLC Module IM-16", category: "Electrical", supplier: "Siemens Automation", lead_time_days: 4, price: 450.00, image: "/parts/plc-module-im-16.jpg", description: "16-Channel 24V DC digital input slice module for S7 system." },
+  { name: "Transformer Fuse TF-63", category: "Electrical", supplier: "ABB Electrification", lead_time_days: 3, price: 25.00, image: "/parts/transformer-fuse-tf-63.jpg", description: "63A 12kV medium voltage current-limiting back-up fuse link." },
+  { name: "Cooling Fan CF-120", category: "Mechanical", supplier: "ebm-papst", lead_time_days: 2, price: 68.00, image: "/parts/cooling-fan-cf-120.jpg", description: "120mm ball-bearing 230V AC cabinet ventilation exhaust fan." },
+  { name: "Heating Element HE-3kW", category: "Electrical", supplier: "Watlow Thermal", lead_time_days: 4, price: 95.00, image: "/parts/heating-element-he-3kw.jpg", description: "3kW 415V Incoloy screw-plug industrial immersion heating element." },
+  { name: "Welding Wire 0.8mm", category: "Consumable", supplier: "ESAB Welding", lead_time_days: 2, price: 28.00, image: "/parts/welding-wire-08mm.jpg", description: "0.8mm ER70S-6 copper-coated solid MIG welding wire (15kg spool)." },
+  { name: "Welding Gas Cylinder", category: "Consumable", supplier: "Linde Gas", lead_time_days: 3, price: 180.00, image: "/parts/welding-gas-cylinder.jpg", description: "50L high-pressure Argon/CO2 shielding gas cylinder (200 bar)." },
+  { name: "Cutting Tool Insert", category: "Consumable", supplier: "Sandvik Coromant", lead_time_days: 2, price: 15.00, image: "/parts/cutting-tool-insert.jpg", description: "TiAlN coated carbide indexable milling insert for steel & alloys." },
+  { name: "End Mill 10mm", category: "Consumable", supplier: "Kennametal", lead_time_days: 2, price: 35.00, image: "/parts/end-mill-10mm.jpg", description: "10mm 4-flute solid carbide high-performance CNC end mill." },
+  { name: "Forklift Tire 23x9-10", category: "Mechanical", supplier: "Continental Industrial", lead_time_days: 4, price: 285.00, image: "/parts/forklift-tire-23x9-10.jpg", description: "23x9-10 resilient solid rubber non-marking forklift drive tire." },
+  { name: "Hydraulic Fluid 20L", category: "Consumable", supplier: "Shell Industrial", lead_time_days: 1, price: 145.00, image: "/parts/hydraulic-fluid-20l.jpg", description: "ISO VG 46 premium anti-wear hydraulic oil (20 Liter pail)." },
 ];
 
 export function generateDemoMachines(): Machine[] {
@@ -365,18 +371,22 @@ export function generateDemoProcedures(machines: Machine[]): RepairProcedure[] {
   return procedures;
 }
 
-export function generateDemoParts(): Part[] {
+export function generateDemoParts(machines: Machine[] = []): Part[] {
   return PART_DEFS.map((def, i) => {
     const images = [def.image];
+    const compatible =
+      machines.length > 0
+        ? [machines[i % machines.length].id, machines[(i + 3) % machines.length].id]
+        : [];
 
     return {
       id: uuid(),
       name: def.name,
       part_number: `PN-${String(1000 + i).padStart(5, "0")}`,
       category: def.category,
-      stock_quantity: i % 4 === 0 ? 2 : i % 3 === 0 ? 4 : 15 + (i * 3) % 40,
+      stock_quantity: i % 4 === 0 ? 2 : i % 3 === 0 ? 4 : 15 + ((i * 3) % 40),
       min_stock_level: 5,
-      unit_price: 12.5 + i * 7.25,
+      unit_price: def.price ?? (12.5 + i * 7.25),
       image_url: images[0] || null,
       images: images.length > 0 ? images : null,
       thumbnail_url: images[0] || null,
@@ -384,9 +394,7 @@ export function generateDemoParts(): Part[] {
       supplier: def.supplier,
       lead_time_days: def.lead_time_days,
       description: def.description,
-      compatible_machines: MACHINE_DEFS.slice(i % 5, (i % 5) + 3).map(() =>
-        uuid()
-      ),
+      compatible_machines: compatible,
     };
   });
 }
@@ -476,7 +484,7 @@ export function generateDemoFaults(machines: Machine[], reporters: Profile[]): F
 
 const machines = generateDemoMachines();
 const procedures = generateDemoProcedures(machines);
-const parts = generateDemoParts();
+const parts = generateDemoParts(machines);
 const profiles = DEMO_USERS.map(({ password, ...p }) => {
   void password;
   return p;

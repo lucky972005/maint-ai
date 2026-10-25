@@ -19,7 +19,7 @@ import {
   getParts,
 } from "@/lib/database";
 import { useApp } from "@/components/providers";
-import { Calendar, Download, Bell } from "lucide-react";
+import { Calendar, Download, Bell, UserCheck } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
@@ -212,7 +212,13 @@ export default function DashboardPage() {
         )}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-lg font-semibold">Manager Overview</h2>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Link href="/assignments">
+              <Button size="sm" className="orange-glow gap-1.5 bg-primary text-primary-foreground font-medium">
+                <UserCheck className="h-4 w-4" />
+                Assign Work Orders ({stats.pendingFaults})
+              </Button>
+            </Link>
             <Button variant="outline" size="sm" onClick={() => setShowSchedule(true)}><Calendar className="h-4 w-4 mr-1" />Schedule Maintenance</Button>
             <Button variant="outline" size="sm"><Download className="h-4 w-4 mr-1" />Export PDF</Button>
           </div>
@@ -299,12 +305,19 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-2">
             {mergedFaults.filter((f) => f.status === "open").slice(0, 5).map((f) => (
-              <div key={f.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
-                <div>
-                  <p className="text-sm font-medium">{f.machine?.name} — {f.description.slice(0, 50)}...</p>
+              <div key={f.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50 gap-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{f.machine?.name} — {f.description.slice(0, 50)}...</p>
                   <p className="text-xs text-muted-foreground">{formatDate(f.created_at ?? "")}</p>
                 </div>
-                <Badge variant="destructive">{f.severity}</Badge>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Badge variant="destructive">{f.severity}</Badge>
+                  <Link href="/assignments">
+                    <Button size="sm" variant="secondary" className="h-7 text-xs px-2.5">
+                      Assign
+                    </Button>
+                  </Link>
+                </div>
               </div>
             ))}
             {mergedLogs.filter((l) => l.status === "completed").slice(0, 3).map((l) => (

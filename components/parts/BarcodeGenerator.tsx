@@ -9,6 +9,8 @@ interface BarcodeGeneratorProps {
   height?: number;
   displayValue?: boolean;
   className?: string;
+  background?: string;
+  lineColor?: string;
 }
 
 export function BarcodeGenerator({
@@ -17,6 +19,8 @@ export function BarcodeGenerator({
   height = 50,
   displayValue = true,
   className = "",
+  background = "#ffffff",
+  lineColor = "#000000",
 }: BarcodeGeneratorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -29,14 +33,14 @@ export function BarcodeGenerator({
           displayValue,
           fontSize: 12,
           margin: 10,
-          background: "#ffffff",
-          lineColor: "#000000",
+          background,
+          lineColor,
         });
       } catch (error) {
         console.error("Failed to generate barcode:", error);
       }
     }
-  }, [value, width, height, displayValue]);
+  }, [value, width, height, displayValue, background, lineColor]);
 
   return (
     <div className={`inline-block ${className}`}>

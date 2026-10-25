@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { getFaultsForTechnician, updateFaultStatus } from "@/lib/database";
 import { useApp } from "@/components/providers";
 import { toast } from "@/hooks/use-toast";
-import { Clock, AlertTriangle, CheckCircle, PlayCircle, User } from "lucide-react";
+import Link from "next/link";
+import { Clock, AlertTriangle, CheckCircle, PlayCircle, User, Wrench } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import type { FaultReport } from "@/lib/types";
 
@@ -170,7 +171,7 @@ export default function InboxPage() {
                         </div>
                       )}
                     </div>
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex flex-wrap items-center gap-2 pt-2">
                       {fault.status === "assigned" && (
                         <Button
                           size="sm"
@@ -190,6 +191,14 @@ export default function InboxPage() {
                           <CheckCircle className="h-4 w-4 mr-2" />
                           {updating === fault.id ? "Resolving..." : "Mark Resolved"}
                         </Button>
+                      )}
+                      {fault.machine_id && (
+                        <Link href={`/repair/${fault.machine_id}`}>
+                          <Button size="sm" variant="outline" className="text-xs">
+                            <Wrench className="h-4 w-4 mr-1.5" />
+                            Open Machine Flow
+                          </Button>
+                        </Link>
                       )}
                     </div>
                   </div>

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Shield, Wrench, Users, AlertCircle, Sparkles, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,8 +49,9 @@ const DEMO_ROLES = [
   },
 ];
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { enterDemoMode } = useApp();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -59,15 +60,37 @@ export default function LoginPage() {
   const supabaseConfigured = isSupabaseConfigured();
   const supabase = createClient();
 
+  useEffect(() => {
+    const pEmail = searchParams.get("email");
+    const pPwd = searchParams.get("prefill_pwd");
+    const isReset = searchParams.get("reset_success");
+
+    if (pEmail) setEmail(pEmail);
+    if (pPwd) setPassword(pPwd);
+    if (isReset) {
+      toast({
+        title: "Password Reset Completed",
+        description: "Your new password is now active. Sign in below.",
+      });
+    }
+  }, [searchParams]);
+
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
 
     try {
       const trimmedEmail = email.trim().toLowerCase();
-      const matchedDemoUser = DEMO_USERS.find(
-        (u) => u.email.toLowerCase() === trimmedEmail && u.password === password
-      );
+      const matchedDemoUser = DEMO_USERS.find((u) => {
+        if (u.email.toLowerCase() !== trimmedEmail) return false;
+        if (typeof window !== "undefined") {
+          const customPasswords = JSON.parse(localStorage.getItem("custom_user_passwords") || "{}");
+          if (customPasswords[trimmedEmail]) {
+            return password === customPasswords[trimmedEmail] || password === u.password;
+          }
+        }
+        return u.password === password;
+      });
 
       // If Supabase is not configured, authenticate against demo accounts
       if (!supabaseConfigured) {
@@ -271,7 +294,12 @@ export default function LoginPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <span className="text-[11px] text-muted-foreground">Default demo: demo123456</span>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-primary font-medium hover:underline transition-colors"
+                >
+                  Forgot password?
+                </Link>
               </div>
               <Input
                 id="password"
@@ -281,6 +309,7 @@ export default function LoginPage() {
                 placeholder="demo123456"
                 required
               />
+              <p className="text-[11px] text-muted-foreground">Default demo password: demo123456</p>
             </div>
             <div className="flex items-center space-x-2">
               <input
@@ -299,11 +328,15 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-muted-foreground pt-2">
+          <p className="text-center text-sm text-muted-foreground pt-2 flex items-center justify-center gap-2">
             <Link href="/signup" className="text-primary hover:underline">
               Create account
             </Link>
-            {" | "}
+            <span>•</span>
+            <Link href="/forgot-password" className="text-primary hover:underline">
+              Forgot password?
+            </Link>
+            <span>•</span>
             <Link href="/" className="text-primary hover:underline">
               Landing Page
             </Link>
@@ -311,5 +344,23 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center industrial-gradient p-4">
+          <div className="w-full max-w-lg rounded-2xl border border-border/50 bg-card p-8 shadow-2xl text-center">
+            <div className="mx-auto mb-4 h-12 w-12 rounded-2xl bg-primary/20 animate-pulse" />
+            <div className="h-6 w-48 bg-muted/40 rounded mx-auto mb-2 animate-pulse" />
+            <div className="h-4 w-64 bg-muted/30 rounded mx-auto animate-pulse" />
+          </div>
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

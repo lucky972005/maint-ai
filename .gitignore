@@ -43,3 +43,23 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# generated reports, test outputs & python caches
+*.pdf
+*.docx
+*.bak
+*.txt
+*.xml
+test_*.html
+poster*.html
+/MaintAI_*.html
+/Het_*.html
+/Het_*.png
+/*_preview.png
+/test_*.png
+/page12_abbreviations.png
+/ppsu_naac_front_logo.png
+__pycache__/
+*.pyc
+extracted_media/
+pdf_images/

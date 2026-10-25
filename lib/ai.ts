@@ -148,6 +148,7 @@ async function callGroqText(messages: TextMessage[], maxTokens = 800): Promise<s
   const openai = new OpenAI({
     apiKey,
     baseURL: "https://api.groq.com/openai/v1",
+    maxRetries: 0,
   });
 
   const response = await openai.chat.completions.create({
